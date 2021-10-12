@@ -15,24 +15,29 @@ except ImportError:
 def main():
     subtitle_file = argv[1]
     subtitle_lang = argv[2].split(":")[0]
+    file = open(subtitle_file.replace(".srt", ".srt.info"), "w")
 
     if subtitle_file[-3:] != "srt":
         print("subtitle must be an srt file.")
         exit()
-
     regex_list = get_regex_list()
-
+    file.write("regex loaded\n")
     blocks = parse_sub(subtitle_file)
-
+    file.write("blocks loaded\n")
     check_regex(blocks, regex_list)
-
+    file.write("checked regex\n")
     detect_adds_start(blocks)
-
+    file.write("detected adds\n")
     detect_adds_end(blocks)
+    file.write("detected adds\n")
 
     publish_sub(subtitle_file, blocks)
+    file.write("wrote data\n")
 
     report(blocks, subtitle_file, subtitle_lang)
+    file.write("wrote report\n")
+    file.close()
+
 
 
 def get_regex_list() -> list:
