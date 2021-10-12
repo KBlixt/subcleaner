@@ -1,4 +1,4 @@
-#Sub-Cleaner
+# Sub-Cleaner
 Sub-cleaner is a python3 script for removing adds from .srt subtitle files.
 The script is more sophisticated than a simple search and delete per line.
 It matches each block against all regexes included in the config. Then the blocks that 
@@ -10,7 +10,7 @@ get re-indexed.
 The script can also determine the language in the script and inform if the language 
 in the file doesn't match up to the subtitle language label. this is optional.
 _____________
-#Installing
+# Installing
 Cloning and running with python3 should work. 
 You can also make the script executable, the shebang is already in place
 
