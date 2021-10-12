@@ -1,4 +1,7 @@
+#!/usr/bin/env python
+
 import pathlib
+import argparse
 from sys import argv, exit
 from configparser import ConfigParser
 from re import findall, IGNORECASE
