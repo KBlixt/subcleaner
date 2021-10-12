@@ -21,6 +21,10 @@ def main():
         print("subtitle must be an srt file.")
         exit()
     regex_list = get_regex_list()
+    file.write("subtitle_file: " + subtitle_file + "\n")
+
+    file.write("regex loaded\n")
+
     file.write("regex loaded\n")
     blocks = parse_sub(subtitle_file)
     file.write("blocks loaded\n")
