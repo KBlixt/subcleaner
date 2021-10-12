@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import pathlib
+from pathlib import Path
 import argparse
 import os
 from sys import argv, exit
@@ -17,44 +17,44 @@ except ImportError:
 
 
 def main():
-    package_dir = pathlib.Path(argv[0]).parent
-    subtitle_file = argv[1]
-    subtitle_lang = argv[2].split(":")[0]
+    config_file: Path = Path(argv[0]).parent.joinpath("regex.config")
+    subtitle_file: Path = Path(argv[1])
+    subtitle_lang: str = argv[2].split(":")[0]
 
-    file = open(subtitle_file.replace(".srt", ".srt.report"), "w")
-    file.write(str(argv) + "\n")
-    file.write("subtitle_file: " + subtitle_file + "\n")
+    log_file = Path(subtitle_file.parent, "log")
+    log = log_file.open(mode="w")
+    log.write(str(argv) + "\n")
+    log.write("subtitle_file: " + str(subtitle_file) + "\n")
 
-    if subtitle_file[-3:] != "srt":
+    if subtitle_file.name[-3:] != "srt":
         print("subtitle must be an srt file.")
-        file.close()
+        log.close()
         exit()
-    regex_list = get_regex_list(package_dir)
+    regex_list = get_regex_list(config_file)
 
-    file.write("regex loaded\n")
+    log.write("regex loaded\n")
 
-    file.write("regex loaded\n")
+    log.write("regex loaded\n")
     blocks = parse_sub(subtitle_file)
-    file.write("blocks loaded\n")
+    log.write("blocks loaded\n")
     check_regex(blocks, regex_list)
-    file.write("checked regex\n")
+    log.write("checked regex\n")
     detect_adds_start(blocks)
-    file.write("detected adds\n")
+    log.write("detected adds\n")
     detect_adds_end(blocks)
-    file.write("detected adds\n")
+    log.write("detected adds\n")
 
     publish_sub(subtitle_file, blocks)
-    file.write("wrote data\n")
+    log.write("wrote data\n")
 
     report(blocks, subtitle_file, subtitle_lang)
-    file.write("wrote report\n")
-    file.close()
+    log.write("wrote report\n")
+    log.close()
 
 
-
-def get_regex_list(package_dir: pathlib.Path) -> list:
+def get_regex_list(config_file: Path) -> list:
     cfg = ConfigParser()
-    cfg.read(package_dir.joinpath("regex.config"))
+    cfg.read(str(config_file))
     regex_list = list(cfg.items("REGEX"))
     new_list = list()
     for regex in regex_list:
@@ -63,8 +63,8 @@ def get_regex_list(package_dir: pathlib.Path) -> list:
     return new_list
 
 
-def parse_sub(subtitle_file) -> list:
-    with open(subtitle_file, "r") as file:
+def parse_sub(subtitle_file: Path) -> list:
+    with subtitle_file.open(mode="r") as file:
         lines = file.readlines()
         lines = [line.rstrip() for line in lines]
 
@@ -125,7 +125,7 @@ def convert_from_timedelta(td: timedelta) -> str:
 
 
 def publish_sub(subtitle_file, blocks):
-    file = open(subtitle_file, "w")
+    file = subtitle_file.open(mode="w")
     i = 1
     for block in blocks:
         block: SubBlock
@@ -199,18 +199,20 @@ def detect_adds_end(blocks):
             block.keep = False
 
 
-def report(blocks: list, subtitle_file: str, subtitle_lang):
+def report(blocks: list, subtitle_file: Path, subtitle_lang):
     write_report = False
 
-    report_path = pathlib.Path(subtitle_file)
-    report_path = pathlib.Path(report_path.parent, pathlib.Path("sub-cleaner." + ".".join(subtitle_file.split(".")[1:]) + ".report"))
-    report_path = str(report_path)
+    report_path = Path(subtitle_file.parent, "sub-cleaner." + subtitle_lang + ".report")
+    warn_path = Path(subtitle_file.parent, "lang-warning." + subtitle_lang + ".report")
 
     if not check_lang(blocks, subtitle_lang):
-        with open(report_path.replace("sub-cleaner.", "lang-warning."), "w") as file:
-            file.write(subtitle_file + " is not the correct language, Please verify.")
+        with warn_path.open(mode='w') as file:
+            file.write(str(subtitle_file) + " is not the correct language, Please verify.")
     else:
-        pathlib.Path(report_path.replace("sub-cleaner.", "lang-warning.")).unlink(missing_ok=True)
+        try:
+            warn_path.unlink()
+        except FileNotFoundError:
+            pass
 
     delete_report: str = "[--Removed Blocks--]\n\n"
     for block in blocks:
@@ -227,9 +229,8 @@ def report(blocks: list, subtitle_file: str, subtitle_lang):
 
     delete_report += "[--/Removed Blocks--]"
 
-    with open(report_path, "w") as file:
+    with report_path.open(mode='w') as file:
         file.write(delete_report)
-
     return
 
 
