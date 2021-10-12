@@ -293,3 +293,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("Interrupted")
         exit()
+    except UnicodeDecodeError:
+        print("Unable to read file, Unicode decode error")
+        exit()
