@@ -1,70 +1,138 @@
 #!/usr/bin/python3
 
 from pathlib import Path
-import argparse
-import os
-from sys import argv, exit
 from configparser import ConfigParser
+from argparse import ArgumentParser
 from re import findall, IGNORECASE
 from datetime import timedelta
 from math import floor
-import langdetect
 try:
-    import six
+    from langdetect import detect
 except ImportError:
     print("package \"six\" must be installed.")
     exit()
 
 
+class SubBlock:
+    index: int
+    content: str
+    start_time: timedelta
+    stop_time: timedelta
+    regex_matches: int
+    keep: bool
+
+    def __init__(self, index):
+        self.index = index
+        self.keep = True
+        self.regex_matches = 0
+        self.content = ""
+        self.stop_time = timedelta()
+        self.start_time = timedelta()
+
+    def __repr__(self) -> str:
+
+        string = (convert_from_timedelta(self.start_time) +
+                  " --> " +
+                  convert_from_timedelta(self.stop_time) +
+                  "\n")
+        string += (self.content + "\n")
+        return string
+
+
 def main():
-    config_file: Path = Path(argv[0]).parent.joinpath("regex.config")
-    subtitle_file: Path = Path(argv[1])
-    subtitle_lang: str = argv[2].split(":")[0]
+    home_dir = Path(__file__).absolute().parent
+    config_file = home_dir.joinpath("settings.config")
 
-    log_file = Path(subtitle_file.parent, "log")
-    log = log_file.open(mode="w")
-    log.write(str(argv) + "\n")
-    log.write("subtitle_file: " + str(subtitle_file) + "\n")
+    args = get_args()
+    config = get_config(config_file)
 
-    if subtitle_file.name[-3:] != "srt":
-        print("subtitle must be an srt file.")
-        log.close()
-        exit()
-    regex_list = get_regex_list(config_file)
+    if args["silent"]:
+        config["log_file"] = None
 
-    log.write("regex loaded\n")
+    if config["log_file"] and not config["log_file"].is_absolute():
+        config["log_file"] = home_dir.joinpath(config["log_file"])
 
-    log.write("regex loaded\n")
-    blocks = parse_sub(subtitle_file)
-    log.write("blocks loaded\n")
-    check_regex(blocks, regex_list)
-    log.write("checked regex\n")
+    blocks = parse_sub(args["subtitle"])
+
+    run_regex(blocks, config["regex_list"])
     detect_adds_start(blocks)
-    log.write("detected adds\n")
     detect_adds_end(blocks)
-    log.write("detected adds\n")
 
-    publish_sub(subtitle_file, blocks)
-    log.write("wrote data\n")
+    publish_sub(args["subtitle"], blocks, config["log_file"])
 
-    report(blocks, subtitle_file, subtitle_lang)
-    log.write("wrote report\n")
-    log.close()
+    if args["language"]:
+        report_incorrect_lang(blocks, args["language"], args["subtitle"], home_dir)
 
 
-def get_regex_list(config_file: Path) -> list:
+def get_args() -> dict:
+    parser = ArgumentParser(description="Remove adds from subtitle. Removed blocks are sent to logfile. "
+                                        "Can also check so that the language match language-label. "
+                                        "edit the settings.config file to change regex filter and "
+                                        "where to store log.")
+
+    parser.add_argument("subtitle", metavar="SUB", type=Path, default=None,
+                        help="Path to subtitle to remove run script against. "
+                             "Script currently only compatible with .srt files.")
+
+    parser.add_argument("--language", "-l", metavar="LANG", type=str, dest="language", default=None,
+                        help="Listed language code of the subtitle. if this argument is set then the script will "
+                             "check that the language of the content matches LANG. If they don't match an empty "
+                             "file called \"[SUB].lang-warn\" will be created alongside the subtitle file. "
+                             "Language code according to 2-letter ISO-639, "
+                             "[LANG] may contain :forced or other \":<tag>\"")
+
+    parser.add_argument("--silent", "-s", action="store_true", dest="silent",
+                        help="Silent: If flag is set then nothing is printed and nothing is logged.")
+
+    args = parser.parse_args()
+    subtitle: Path = args.subtitle
+    language: str = args.language
+    silent: bool = args.silent
+
+    ret = {}
+
+    # check usage:
+
+    if subtitle is None:
+        parser.print_help()
+        exit()
+
+    if not subtitle.is_file() or subtitle.name[-4:] != ".srt":
+        print("make sure that the subtitle-file is a srt-file")
+        print("--help for more information.")
+        exit()
+    ret["subtitle"] = subtitle
+
+    if language is not None and len(language.split(":")[0]) != 2:
+        print("Use 2-letter ISO-639 standard language code.")
+        print("--help for more information.")
+        exit()
+    ret["language"] = language.split(":")[0].lower()
+
+    ret["silent"] = silent
+
+    return ret
+
+
+def get_config(config_file: Path) -> dict:
     cfg = ConfigParser()
     cfg.read(str(config_file))
-    regex_list = list(cfg.items("REGEX"))
-    new_list = list()
-    for regex in regex_list:
+    regex_list = list()
+    for regex in list(cfg.items("REGEX")):
         if len(regex[1]) != 0:
-            new_list.append(regex[1])
-    return new_list
+            regex_list.append(regex[1])
+    try:
+        log_file = Path(cfg.get("SETTINGS", "log_path"))
+    except KeyError:
+        log_file = None
+    if not log_file or log_file.is_dir():
+        log_file = None
+
+    return {"regex_list": regex_list, "log_file": log_file}
 
 
-def parse_sub(subtitle_file: Path) -> list:
-    with subtitle_file.open(mode="r") as file:
+def parse_sub(subtitle: Path) -> list:
+    with subtitle.open(mode="r") as file:
         lines = file.readlines()
         lines = [line.rstrip() for line in lines]
 
@@ -72,7 +140,7 @@ def parse_sub(subtitle_file: Path) -> list:
     block = SubBlock(1)
     blocks = []
     for line in lines:
-        line = line.replace("\n", "")
+        line = line.rstrip()
         if len(line) == 0:
             if len(block.content) > 0:
                 blocks.append(block)
@@ -81,13 +149,14 @@ def parse_sub(subtitle_file: Path) -> list:
             continue
 
         if "-->" in line and block.stop_time.seconds == 0:
-            start = line.split("-->")[0].strip()
-            stop = line.split("-->")[1].strip().replace("\n", "")
-            block.start_time = convert_to_timedelta(start)
-            block.stop_time = convert_to_timedelta(stop)
+            start_string = line.split("-->")[0].strip()
+            block.start_time = convert_to_timedelta(start_string)
+
+            stop_string = line.split("-->")[1].strip().replace("\n", "")
+            block.stop_time = convert_to_timedelta(stop_string)
             continue
 
-        if line.isnumeric() and block.stop_time.seconds == 0:
+        if block.stop_time.seconds == 0:
             continue
 
         block.content = block.content + line + "\n"
@@ -95,9 +164,9 @@ def parse_sub(subtitle_file: Path) -> list:
     return blocks
 
 
-def convert_to_timedelta(time_string: str) -> timedelta:
-    time_string = time_string.replace(".", ",")
-    split = time_string.split(":")
+def convert_to_timedelta(timing: str) -> timedelta:
+    timing = timing.replace(".", ",")
+    split = timing.split(":")
 
     return timedelta(hours=float(split[0]),
                      minutes=float(split[1]),
@@ -105,11 +174,11 @@ def convert_to_timedelta(time_string: str) -> timedelta:
                      milliseconds=float(split[2].split(",")[1]))
 
 
-def convert_from_timedelta(td: timedelta) -> str:
-    hours = floor(td.seconds / 60 / 60)
-    minutes = floor(td.seconds / 60)
-    seconds = floor(td.seconds)
-    mill = floor(td.microseconds / 1000)
+def convert_from_timedelta(timing: timedelta) -> str:
+    hours = floor(timing.seconds / 60 / 60)
+    minutes = floor(timing.seconds / 60)
+    seconds = floor(timing.seconds)
+    mill = floor(timing.microseconds / 1000)
 
     hours_str = str(hours)
     minutes_str = str(minutes % (60 * 60))
@@ -124,42 +193,48 @@ def convert_from_timedelta(td: timedelta) -> str:
     return hours_str + ":" + minutes_str + ":" + seconds_str + "," + mill_str
 
 
-def publish_sub(subtitle_file, blocks):
-    file = subtitle_file.open(mode="w")
+def publish_sub(subtitle: Path, blocks: list, log: Path):
+    file = subtitle.open(mode="w")
     i = 1
     for block in blocks:
         block: SubBlock
         if not block.keep:
-            continue
+            if log:
+                string_to_log = "[--- block removed from: \"" + subtitle.name + "\" ---]\n"
+                string_to_log += (str(block.index) + "\n")
+                string_to_log += (str(block))
+                with log.open(mode="a") as log_file:
+                    try:
+                        log_file.write(string_to_log)
+                    except KeyboardInterrupt as e:
+                        log_file.write(string_to_log)
+                        log_file.close()
+                        raise e
 
+                    print(string_to_log)
+            continue
         file.write(str(i) + "\n")
-        file.write(convert_from_timedelta(block.start_time) +
-                   " --> " +
-                   convert_from_timedelta(block.stop_time) +
-                   "\n")
-        file.write(block.content + "\n")
+        file.write(str(block))
         i += 1
 
 
-def check_lang(blocks, subtitle_lang) -> bool:
+def check_lang(blocks: list, language: str) -> bool:
     content = ""
     for block in blocks:
         if block.keep:
             content = content + block.content
-    return langdetect.detect(content) == subtitle_lang
+    return detect(content) == language
 
 
-def check_regex(blocks, regex_list):
+def run_regex(blocks, regex_list):
     for block in blocks:
-        matches = 0
         for regex in regex_list:
             result = findall(regex, block.content.replace("\n", " "), flags=IGNORECASE)
             if result is not None:
-                matches += len(result)
-        block.regex_matches = matches
+                block.regex_matches += len(result)
 
 
-def detect_adds_start(blocks):
+def detect_adds_start(blocks: list):
     max_index = len(blocks)
     for block in blocks:
         block: SubBlock
@@ -181,7 +256,7 @@ def detect_adds_start(blocks):
             block.keep = False
 
 
-def detect_adds_end(blocks):
+def detect_adds_end(blocks: list):
     min_index = max(0, len(blocks) - 10)
 
     best_match_index = None
@@ -199,57 +274,22 @@ def detect_adds_end(blocks):
             block.keep = False
 
 
-def report(blocks: list, subtitle_file: Path, subtitle_lang):
-    write_report = False
+def report_incorrect_lang(blocks: list, language: str, subtitle: Path, home_dir: Path):
+    warn_path = Path(home_dir, subtitle.name + ".lang-warn")
 
-    report_path = Path(subtitle_file.parent, "sub-cleaner." + subtitle_lang + ".report")
-    warn_path = Path(subtitle_file.parent, "lang-warning." + subtitle_lang + ".report")
-
-    if not check_lang(blocks, subtitle_lang):
+    if not check_lang(blocks, language):
         with warn_path.open(mode='w') as file:
-            file.write(str(subtitle_file) + " is not the correct language, Please verify.")
+            file.write(str(subtitle) + " is not the correct language, Please verify.")
     else:
         try:
             warn_path.unlink()
         except FileNotFoundError:
             pass
 
-    delete_report: str = "[--Removed Blocks--]\n\n"
-    for block in blocks:
-        block: SubBlock
-        if not block.keep:
-            write_report = True
-            delete_report += str(block.index) + "\n"
-            delete_report += convert_from_timedelta(block.start_time) + " --> " + convert_from_timedelta(
-                block.stop_time) + "\n"
-            delete_report += block.content + "\n"
-
-    if not write_report:
-        return
-
-    delete_report += "[--/Removed Blocks--]"
-
-    with report_path.open(mode='w') as file:
-        file.write(delete_report)
-    return
-
-
-class SubBlock:
-    index: int
-    content: str
-    start_time: timedelta
-    stop_time: timedelta
-    regex_matches: int
-    keep: bool
-
-    def __init__(self, index):
-        self.index = index
-        self.keep = True
-        self.regex_matches = 0
-        self.content = ""
-        self.stop_time = timedelta()
-        self.start_time = timedelta()
-
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Interrupted")
+        exit()
