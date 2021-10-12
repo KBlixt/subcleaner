@@ -15,7 +15,7 @@ except ImportError:
 def main():
     subtitle_file = argv[1]
     subtitle_lang = argv[2].split(":")[0]
-    file = open(subtitle_file.replace(".srt", ".srt.info"), "w")
+    file = open("/config/testing", "w")
 
     if subtitle_file[-3:] != "srt":
         print("subtitle must be an srt file.")
