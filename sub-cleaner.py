@@ -2,6 +2,7 @@
 
 import pathlib
 import argparse
+import os
 from sys import argv, exit
 from configparser import ConfigParser
 from re import findall, IGNORECASE
@@ -252,4 +253,5 @@ class SubBlock:
 
 
 if __name__ == '__main__':
+    os.mkdir("trying")
     main()
