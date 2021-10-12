@@ -17,15 +17,13 @@ except ImportError:
 
 
 def main():
-    file = open("/config/testing", "w")
+
+    subtitle_file = argv[1]
+    subtitle_lang = argv[2].split(":")[0]
+
+    file = open(subtitle_file.replace(".srt", ".srt.report"), "w")
     file.write(str(argv) + "\n")
-    try:
-        subtitle_file = argv[1]
-        subtitle_lang = argv[2].split(":")[0]
-        file.write("subtitle_file: " + subtitle_file + "\n")
-    except:
-        file.close()
-        exit()
+    file.write("subtitle_file: " + subtitle_file + "\n")
 
     if subtitle_file[-3:] != "srt":
         print("subtitle must be an srt file.")
