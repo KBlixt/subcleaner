@@ -13,10 +13,10 @@ except ImportError:
 
 
 def main():
-    subtitle_file = argv[1]
-    subtitle_lang = argv[2].split(":")[0]
     file = open("/config/testing", "w")
     file.write(str(argv) + "\n")
+    subtitle_file = argv[1]
+    subtitle_lang = argv[2].split(":")[0]
     file.write("subtitle_file: " + subtitle_file + "\n")
 
     if subtitle_file[-3:] != "srt":
