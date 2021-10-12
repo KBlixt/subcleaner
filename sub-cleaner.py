@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 from pathlib import Path
 from configparser import ConfigParser
@@ -6,11 +6,7 @@ from argparse import ArgumentParser
 from re import findall, IGNORECASE
 from datetime import timedelta
 from math import floor
-try:
-    from langdetect import detect
-except ImportError:
-    print("package \"six\" must be installed.")
-    exit()
+from langdetect import detect
 
 
 class SubBlock:
@@ -89,7 +85,7 @@ def get_args() -> dict:
     language: str = args.language
     silent: bool = args.silent
 
-    ret = {}
+    ret = dict()
 
     # check usage:
 
@@ -97,17 +93,23 @@ def get_args() -> dict:
         parser.print_help()
         exit()
 
+    if not subtitle.is_absolute():
+        subtitle = Path.cwd().joinpath(subtitle)
+
     if not subtitle.is_file() or subtitle.name[-4:] != ".srt":
         print("make sure that the subtitle-file is a srt-file")
         print("--help for more information.")
         exit()
     ret["subtitle"] = subtitle
 
-    if language is not None and len(language.split(":")[0]) != 2:
-        print("Use 2-letter ISO-639 standard language code.")
-        print("--help for more information.")
-        exit()
-    ret["language"] = language.split(":")[0].lower()
+    if language is not None:
+        if len(language.split(":")[0]) != 2:
+            print("Use 2-letter ISO-639 standard language code.")
+            print("--help for more information.")
+            exit()
+        ret["language"] = language.split(":")[0].lower()
+    else:
+        ret["language"] = None
 
     ret["silent"] = silent
 
