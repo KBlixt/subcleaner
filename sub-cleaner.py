@@ -13,8 +13,8 @@ except ImportError:
 
 
 def main():
-    subtitle_file = argv[2]
-    subtitle_lang = argv[3].split(":")[0]
+    subtitle_file = argv[1]
+    subtitle_lang = argv[2].split(":")[0]
     file = open("/config/testing", "w")
     file.write(str(argv) + "\n")
     file.write("subtitle_file: " + subtitle_file + "\n")
