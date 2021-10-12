@@ -17,7 +17,7 @@ except ImportError:
 
 
 def main():
-
+    package_dir = pathlib.Path(argv[0]).parent
     subtitle_file = argv[1]
     subtitle_lang = argv[2].split(":")[0]
 
@@ -29,7 +29,7 @@ def main():
         print("subtitle must be an srt file.")
         file.close()
         exit()
-    regex_list = get_regex_list()
+    regex_list = get_regex_list(package_dir)
 
     file.write("regex loaded\n")
 
@@ -52,9 +52,9 @@ def main():
 
 
 
-def get_regex_list() -> list:
+def get_regex_list(package_dir: pathlib.Path) -> list:
     cfg = ConfigParser()
-    cfg.read("regex.config")
+    cfg.read(package_dir.joinpath("regex.config"))
     regex_list = list(cfg.items("REGEX"))
     new_list = list()
     for regex in regex_list:
