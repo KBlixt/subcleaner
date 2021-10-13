@@ -7,8 +7,6 @@ in the file are analyzed.
 Once the script have identified ad-blocks they get removed and the remaining blocks 
 get re-indexed.
 
-The script can also determine the language in the script and inform if the language 
-in the file doesn't match up to the subtitle language label. this is optional.
 # Installing
 Cloning and running with python3 should work. 
 You can also make the script executable, the shebang is already in place
@@ -32,16 +30,20 @@ make sure the Bazarr container have access to the script directory. Either
 mount /opt/sub-cleaner into the container as a volume or install the directory inside 
 the Bazarr config directory. It should work 
 right out the gate provided the paths and permissions are set up correctly.
+
 # Config
 In the settings.config you can change regex and logging file.
+
 ### Regex:
 Editing the regex fields changes what regex is used for ad-detection. 
 regex should aim towards matching ads exclusively. 
 
 ### Logging:
 Changing log_path changes where the removed subtitle blocks are logged.
+
 # Thank you :)
 Please, If you find any issues or a useful regex, feel free to share in "Issues".
+
 ### Future:
 - Better exception handling.
 - Better logging.
