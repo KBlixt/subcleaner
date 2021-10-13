@@ -2,10 +2,10 @@ from .sub_block import SubBlock
 
 
 class Subtitle(object):
-    blocks: list[SubBlock]
+    blocks: list
 
     def __init__(self, file_content: str):
-        self.blocks: list[SubBlock] = list()
+        self.blocks: list = list()
         self._parse(file_content)
 
     def add_block(self, block: SubBlock) -> None:

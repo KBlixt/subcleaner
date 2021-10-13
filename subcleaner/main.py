@@ -10,7 +10,7 @@ from .directives import Directives
 
 
 def main(package_dir: Path):
-    deleted_blocks: list[SubBlock]
+    deleted_blocks: list
     subtitle: Subtitle
 
     directives = Directives()
@@ -137,7 +137,7 @@ def generate_log(out_string: str) -> str:
     return "\n".join(str(datetime.now())[:19] + ": " + line for line in out_string.split("\n")) + "\n"
 
 
-def generate_out(deleted_blocks: list[SubBlock], directives, detected_language) -> str:
+def generate_out(deleted_blocks: list, directives, detected_language) -> str:
     report = "SUBTITLE: \"" + str(directives.subtitle_file) + "\"\n"
     if directives.dry_run:
         report += "\t[INFO]: Nothing will be altered, (Dry-run).\n"

@@ -3,8 +3,8 @@ from .sub_block import SubBlock
 from re import findall, IGNORECASE
 
 
-def clean(subtitle: Subtitle, regex_list) -> list[SubBlock]:
-    delete_blocks: list[SubBlock] = list()
+def clean(subtitle: Subtitle, regex_list) -> list:
+    delete_blocks: list = list()
 
     _run_regex(subtitle, regex_list)
 
@@ -25,8 +25,8 @@ def _run_regex(subtitle: Subtitle, regex_list):
                 block.regex_matches += len(result)
 
 
-def _remove_ads_start(subtitle: Subtitle) -> list[SubBlock]:
-    delete_blocks: list[SubBlock] = list()
+def _remove_ads_start(subtitle: Subtitle) -> list:
+    delete_blocks: list = list()
     blocks = subtitle.blocks
     max_index = len(blocks)
     for block in blocks:
@@ -48,9 +48,9 @@ def _remove_ads_start(subtitle: Subtitle) -> list[SubBlock]:
     return delete_blocks
 
 
-def _remove_ads_end(subtitle: Subtitle) -> list[SubBlock]:
-    delete_blocks: list[SubBlock] = list()
-    blocks: list[SubBlock] = subtitle.blocks
+def _remove_ads_end(subtitle: Subtitle) -> list:
+    delete_blocks: list = list()
+    blocks: list = subtitle.blocks
     min_index: int = max(0, len(blocks) - 10)
     best_match_index: int = 0
     highest_score: int = 0
