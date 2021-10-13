@@ -82,7 +82,7 @@ def parse_args(directives: Directives) -> None:
         exit()
     directives.subtitle_file = subtitle_file
 
-    language: str = args.language
+    language: str = args.language.replace("\"", "")
     if language is not None:
         if len(language.split(":")[0]) != 2:
             print("Use 2-letter ISO-639 standard language code.")
