@@ -235,6 +235,12 @@ def publish_sub(subtitle: Path, blocks: list, log: Path):
         log_entry = "[ --- Blocks removed from \"" + subtitle.name + "\" ---]:\n" + log_entry
         log_entry += "[-----------------------------------------------------------------------------------------------]"
         log_entry = "\n".join(str(datetime.now())[:19] + ": " + line for line in log_entry.split("\n")) + "\n"
+
+        try:
+            log.parent.mkdir()
+        except FileExistsError:
+            pass
+
         with log.open(mode="a") as log_file:
             log_file.write(log_entry)
 
