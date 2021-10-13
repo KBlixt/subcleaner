@@ -4,7 +4,7 @@ from pathlib import Path
 from configparser import ConfigParser
 from argparse import ArgumentParser
 from re import findall, IGNORECASE
-from datetime import timedelta
+from datetime import timedelta, datetime
 from math import floor
 from langdetect import detect
 
@@ -54,7 +54,11 @@ def main():
     detect_adds_start(blocks)
     detect_adds_end(blocks)
 
-    publish_sub(args["subtitle"], blocks, config["log_file"])
+    try:
+        publish_sub(args["subtitle"], blocks, config["log_file"])
+    except KeyboardInterrupt as e:
+        publish_sub(args["subtitle"], blocks, config["log_file"])
+        raise e
 
     if args["language"]:
         report_incorrect_lang(blocks, args["language"], args["subtitle"], home_dir)
@@ -137,24 +141,24 @@ def parse_sub(subtitle: Path) -> list:
     with subtitle.open(mode="r") as file:
         lines = file.readlines()
         lines = [line.rstrip() for line in lines]
+    lines.append("")
 
     current_index = 1
     block = SubBlock(1)
-    blocks = []
+    blocks = list()
     for line in lines:
-        line = line.rstrip()
         if len(line) == 0:
             if len(block.content) > 0:
                 blocks.append(block)
                 current_index += 1
-            block = SubBlock(current_index)
+                block = SubBlock(current_index)
             continue
 
-        if "-->" in line and block.stop_time.seconds == 0:
-            start_string = line.split("-->")[0].strip()
+        if " --> " in line and block.stop_time.seconds == 0:
+            start_string = line.split(" --> ")[0].rstrip()[:12]
             block.start_time = convert_to_timedelta(start_string)
 
-            stop_string = line.split("-->")[1].strip().replace("\n", "")
+            stop_string = line.split(" --> ")[1].rstrip()[:12]
             block.stop_time = convert_to_timedelta(stop_string)
             continue
 
@@ -177,15 +181,23 @@ def convert_to_timedelta(timing: str) -> timedelta:
 
 
 def convert_from_timedelta(timing: timedelta) -> str:
-    hours = floor(timing.seconds / 60 / 60)
-    minutes = floor(timing.seconds / 60)
-    seconds = floor(timing.seconds)
-    mill = floor(timing.microseconds / 1000)
+    time = timing.total_seconds()
+
+    hours = floor(time / (60*60))
+    time = time - hours * (60*60)
+
+    minutes = floor(time / 60)
+    time = time - minutes * 60
+
+    seconds = floor(time)
+    time = time - seconds
+
+    mill = floor(time*1000)
 
     hours_str = str(hours)
-    minutes_str = str(minutes % (60 * 60))
-    seconds_str = str(seconds % 60)
-    mill_str = str(mill % 1000)
+    minutes_str = str(minutes)
+    seconds_str = str(seconds)
+    mill_str = str(mill)
 
     hours_str = "0" * (2 - len(hours_str)) + hours_str
     minutes_str = "0" * (2 - len(minutes_str)) + minutes_str
@@ -196,28 +208,35 @@ def convert_from_timedelta(timing: timedelta) -> str:
 
 
 def publish_sub(subtitle: Path, blocks: list, log: Path):
-    file = subtitle.open(mode="w")
     i = 1
+    sub_file_content = ""
+    log_entry = ""
     for block in blocks:
         block: SubBlock
+
         if not block.keep:
             if log:
-                string_to_log = "[--- block removed from: \"" + subtitle.name + "\" ---]\n"
-                string_to_log += (str(block.index) + "\n")
-                string_to_log += (str(block))
-                with log.open(mode="a") as log_file:
-                    try:
-                        log_file.write(string_to_log)
-                    except KeyboardInterrupt as e:
-                        log_file.write(string_to_log)
-                        log_file.close()
-                        raise e
-
-                    print(string_to_log)
+                log_entry += (str(block.index) + "\n")
+                log_entry += (str(block))
             continue
-        file.write(str(i) + "\n")
-        file.write(str(block))
+
+        sub_file_content += (str(i) + "\n")
+        sub_file_content += (str(block))
         i += 1
+
+    if len(sub_file_content) == 0:
+        print("After processing the subtitle nothing was left in the file. No changes will be made, exiting.")
+        exit()
+    with subtitle.open(mode="w") as sub_file:
+        sub_file.write(sub_file_content[:-1])
+
+    if len(log_entry) > 0:
+        print("Blocks removed from subtitle:\n" + log_entry)
+        log_entry = "[ --- Blocks removed from \"" + subtitle.name + "\" ---]:\n" + log_entry
+        log_entry += "[-----------------------------------------------------------------------------------------------]"
+        log_entry = "\n".join(str(datetime.now())[:19] + ": " + line for line in log_entry.split("\n")) + "\n"
+        with log.open(mode="a") as log_file:
+            log_file.write(log_entry)
 
 
 def check_lang(blocks: list, language: str) -> bool:
