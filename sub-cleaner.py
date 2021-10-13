@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from re import findall, IGNORECASE
 from datetime import timedelta, datetime
 from math import floor
+from langdetect import detect
 
 
 class SubBlock:
@@ -37,6 +38,8 @@ class SubBlock:
 def main():
     home_dir = Path(__file__).absolute().parent
     config_file = home_dir.joinpath("settings.config")
+    if not config_file.is_file():
+        config_file.write_text(home_dir.joinpath("example-settings.config").read_text())
 
     args = get_args()
     config = get_config(config_file)
@@ -44,8 +47,8 @@ def main():
     if args["silent"]:
         config["log_file"] = None
 
-    if config["log_file"] and not config["log_file"].is_absolute():
-        config["log_file"] = home_dir.joinpath(config["log_file"])
+    if config["log_dir"] and not config["log_dir"].is_absolute():
+        config["log_dir"] = home_dir.joinpath(config["log_dir"])
 
     blocks = parse_sub(args["subtitle"])
 
@@ -54,14 +57,18 @@ def main():
     detect_ads_end(blocks)
 
     try:
-        publish_sub(args["subtitle"], blocks, config["log_file"])
+        publish_sub(args["subtitle"], blocks, config["log_dir"])
     except KeyboardInterrupt as e:
-        publish_sub(args["subtitle"], blocks, config["log_file"])
+        publish_sub(args["subtitle"], blocks, config["log_dir"])
         raise e
+
+    if args["language"]:
+        report_incorrect_lang(blocks, args["language"], args["subtitle"], home_dir)
 
 
 def get_args() -> dict:
     parser = ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
+                                        "Can also check so that the language match language-label. "
                                         "Edit the settings.config file to change regex filter and "
                                         "where to store log.")
 
@@ -69,11 +76,19 @@ def get_args() -> dict:
                         help="Path to subtitle to run script against. "
                              "Script currently only compatible with simple .srt files.")
 
+    parser.add_argument("--language", "-l", metavar="LANG", type=str, dest="language", default=None,
+                        help="Listed language code of the subtitle. if this argument is set then the script will "
+                             "check that the language of the content matches LANG. If they don't match an empty "
+                             "file called \"[SUB].lang-warn\" will be created alongside the subtitle file. "
+                             "Language code according to 2-letter ISO-639, "
+                             "[LANG] may contain :forced or other \":<tag>\"")
+
     parser.add_argument("--silent", "-s", action="store_true", dest="silent",
                         help="Silent: If flag is set then nothing is printed and nothing is logged.")
 
     args = parser.parse_args()
     subtitle: Path = args.subtitle
+    language: str = args.language
     silent: bool = args.silent
 
     ret = dict()
@@ -93,6 +108,15 @@ def get_args() -> dict:
         exit()
     ret["subtitle"] = subtitle
 
+    if language is not None:
+        if len(language.split(":")[0]) != 2:
+            print("Use 2-letter ISO-639 standard language code.")
+            print("--help for more information.")
+            exit()
+        ret["language"] = language.split(":")[0].lower()
+    else:
+        ret["language"] = None
+
     ret["silent"] = silent
 
     return ret
@@ -106,13 +130,13 @@ def get_config(config_file: Path) -> dict:
         if len(regex[1]) != 0:
             regex_list.append(regex[1])
     try:
-        log_file = Path(cfg.get("SETTINGS", "log_path"))
+        log_dir = Path(cfg.get("SETTINGS", "log_dir"))
     except KeyError:
-        log_file = None
-    if not log_file or log_file.is_dir():
-        log_file = None
+        log_dir = None
+    if not log_dir or log_dir.is_dir():
+        log_dir = None
 
-    return {"regex_list": regex_list, "log_file": log_file}
+    return {"regex_list": regex_list, "log_dir": log_dir}
 
 
 def parse_sub(subtitle: Path) -> list:
@@ -218,9 +242,17 @@ def publish_sub(subtitle: Path, blocks: list, log: Path):
             log.parent.mkdir()
         except FileExistsError:
             pass
-
-        with log.open(mode="a") as log_file:
+        remove_log = log.joinpath("removed.log")
+        with remove_log.open(mode="a") as log_file:
             log_file.write(log_entry)
+
+
+def check_lang(blocks: list, language: str) -> bool:
+    content = ""
+    for block in blocks:
+        if block.keep:
+            content = content + block.content
+    return detect(content) == language
 
 
 def run_regex(blocks, regex_list):
@@ -269,6 +301,19 @@ def detect_ads_end(blocks: list):
     for block in blocks[max(0, best_match_index - 2): min(len(blocks), best_match_index + 2)]:
         if block.regex_matches > 0:
             block.keep = False
+
+
+def report_incorrect_lang(blocks: list, language: str, subtitle: Path, home_dir: Path):
+    warn_path = Path(home_dir, subtitle.name + ".lang-warn")
+
+    if not check_lang(blocks, language):
+        with warn_path.open(mode='w') as file:
+            file.write(str(subtitle) + " is not the correct language, Please verify.")
+    else:
+        try:
+            warn_path.unlink()
+        except FileNotFoundError:
+            pass
 
 
 if __name__ == '__main__':

@@ -7,6 +7,9 @@ in the file are analyzed.
 Once the script have identified ad-blocks they get removed and the remaining blocks 
 get re-indexed.
 
+The script can also determine the language in the script and inform if the language 
+in the file doesn't match up to the subtitle language label. this is optional.
+
 # Installing
 Cloning and running with python3 should work. 
 You can also make the script executable, the shebang is already in place
