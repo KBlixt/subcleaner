@@ -14,7 +14,7 @@ def main(package_dir: Path):
     subtitle: Subtitle
 
     directives = Directives()
-    config_file: Path = package_dir.joinpath("../settings.config")
+    config_file: Path = package_dir.joinpath("settings.config")
     if not config_file.is_file():
         config_file.write_text(package_dir.joinpath("example-settings.config").read_text())
 
