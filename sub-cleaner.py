@@ -50,8 +50,8 @@ def main():
     blocks = parse_sub(args["subtitle"])
 
     run_regex(blocks, config["regex_list"])
-    detect_adds_start(blocks)
-    detect_adds_end(blocks)
+    detect_ads_start(blocks)
+    detect_ads_end(blocks)
 
     try:
         publish_sub(args["subtitle"], blocks, config["log_file"])
@@ -61,13 +61,13 @@ def main():
 
 
 def get_args() -> dict:
-    parser = ArgumentParser(description="Remove adds from subtitle. Removed blocks are sent to logfile. "
+    parser = ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
                                         "Edit the settings.config file to change regex filter and "
                                         "where to store log.")
 
     parser.add_argument("subtitle", metavar="SUB", type=Path, default=None,
-                        help="Path to subtitle to remove run script against. "
-                             "Script currently only compatible with .srt files.")
+                        help="Path to subtitle to run script against. "
+                             "Script currently only compatible with simple .srt files.")
 
     parser.add_argument("--silent", "-s", action="store_true", dest="silent",
                         help="Silent: If flag is set then nothing is printed and nothing is logged.")
@@ -231,7 +231,7 @@ def run_regex(blocks, regex_list):
                 block.regex_matches += len(result)
 
 
-def detect_adds_start(blocks: list):
+def detect_ads_start(blocks: list):
     max_index = len(blocks)
     for block in blocks:
         block: SubBlock
@@ -253,7 +253,7 @@ def detect_adds_start(blocks: list):
             block.keep = False
 
 
-def detect_adds_end(blocks: list):
+def detect_ads_end(blocks: list):
     min_index = max(0, len(blocks) - 10)
 
     best_match_index = None
