@@ -47,6 +47,7 @@ Changing log_path changes where the removed subtitle blocks are logged.
 # Thank you :)
 Please, If you find any issues or a useful regex, feel free to share in "Issues".
 
-### Future:
-- Better exception handling.
-- Better logging.
+__________________
+###### Future:
+Better exception handling. for now, 
+just make sure that you don't run into any permission issues.
