@@ -77,7 +77,7 @@ def parse_args(directives: Directives) -> None:
         subtitle_file = Path.cwd().joinpath(subtitle_file)
 
     if not subtitle_file.is_file() or subtitle_file.name[-4:] != ".srt":
-        print("make sure that the subtitle-file is a srt-file")
+        print("make sure that the subtitle file is a .srt file")
         print("--help for more information.")
         exit()
     directives.subtitle_file = subtitle_file
