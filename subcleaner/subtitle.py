@@ -12,7 +12,8 @@ class Subtitle(object):
         self.blocks.append(block)
 
     def remove_block(self, block: SubBlock) -> None:
-        self.blocks.remove(block)
+        if block in self.blocks:
+            self.blocks.remove(block)
 
     def _parse(self, file_content: str) -> None:
         current_index = 1

@@ -10,10 +10,16 @@ def clean(subtitle: Subtitle, regex_list) -> list:
 
     delete_blocks += _remove_ads_start(subtitle)
     delete_blocks += _remove_ads_end(subtitle)
+
+    clean_delete_blocks: list = list()
     for block in delete_blocks:
+        if block not in clean_delete_blocks:
+            clean_delete_blocks.append(block)
+
+    for block in clean_delete_blocks:
         subtitle.remove_block(block)
 
-    return delete_blocks
+    return clean_delete_blocks
 
 
 def _run_regex(subtitle: Subtitle, regex_list):
@@ -41,6 +47,9 @@ def _remove_ads_start(subtitle: Subtitle) -> list:
             best_match_index = block.orig_index
             highest_score = block.regex_matches
 
+    if best_match_index == 0:
+        return []
+
     considered_blocks = list(blocks[max(0, best_match_index - 2): min(len(blocks), best_match_index + 2)])
     for block in considered_blocks:
         if block.regex_matches > 0:
@@ -60,10 +69,11 @@ def _remove_ads_end(subtitle: Subtitle) -> list:
             best_match_index = block.orig_index
             highest_score = block.regex_matches
 
+    if best_match_index == 0:
+        return []
+
     considered_blocks = list(blocks[max(0, best_match_index - 2): min(len(blocks), best_match_index + 2)])
     for block in considered_blocks:
         if block.regex_matches > 0:
             delete_blocks.append(block)
     return delete_blocks
-
-
