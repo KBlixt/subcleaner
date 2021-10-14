@@ -142,31 +142,31 @@ def generate_log(out_string: str) -> str:
 def generate_out(deleted_blocks: list, directives, detected_language) -> str:
     report = "SUBTITLE: \"" + str(directives.subtitle_file) + "\"\n"
     if directives.dry_run:
-        report += "\t[INFO]: Nothing will be altered, (Dry-run).\n"
+        report += "    [INFO]: Nothing will be altered, (Dry-run).\n"
     if directives.language is None or detected_language is None:
-        report += "\t[INFO]: Didn't run language detection.\n"
+        report += "    [INFO]: Didn't run language detection.\n"
     elif directives.language == detected_language:
-        report += "\t[INFO]: Subtitle language match file label. \n"
+        report += "    [INFO]: Subtitle language match file label. \n"
     else:
-        report += "\t[WARNING]: Detected language: \"" + detected_language + "\" does not match file label.\n"
+        report += "    [WARNING]: Detected language: \"" + detected_language + "\" does not match file label.\n"
 
     if len(deleted_blocks) > 0:
-        report += "\t[INFO]: Removed " + str(len(deleted_blocks)) + " subtitle blocks:\n"
-        report += "\t\t\t[---------Removed Blocks----------]"
+        report += "    [INFO]: Removed " + str(len(deleted_blocks)) + " subtitle blocks:\n"
+        report += "            [---------Removed Blocks----------]"
         for block in deleted_blocks:
-            report += "\n\t\t\t" + str(block.orig_index) + "\n\t\t\t"
-            report += str(block).replace("\n", "\n\t\t\t")[:-3]
-        report += "\t\t\t[---------------------------------]\n"
+            report += "\n            " + str(block.orig_index) + "\n            "
+            report += str(block).replace("\n", "\n            ")[:-12]
+        report += "            [---------------------------------]\n"
     else:
-        report += "\t[INFO]: Removed " + str(len(deleted_blocks)) + " subtitle blocks.\n"
+        report += "    [INFO]: Removed " + str(len(deleted_blocks)) + " subtitle blocks.\n"
 
     report += "[---------------------------------------------------------------------------------]"
     return report
 
 
 def report_unicode_error(directives) -> str:
-    report = "SUBTITLE: \"" + str(directives.subtitle_file) + "\"\n"
-    report += "\t[WARNING]: Unable to decode subtitle.\n"
+    report = "SUBTITLE:     " + str(directives.subtitle_file) + "\"\n"
+    report += "    [WARNING]: Unable to decode subtitle.\n"
     report += "[---------------------------------------------------------------------------------]"
     return report
 
