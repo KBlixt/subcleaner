@@ -3,7 +3,6 @@ from argparse import ArgumentParser
 from configparser import ConfigParser
 from .cleaner import clean
 from .subtitle import Subtitle
-from .sub_block import SubBlock
 from langdetect import detect
 from datetime import datetime
 from .directives import Directives
@@ -49,11 +48,9 @@ def parse_args(directives: Directives) -> None:
                              "Script currently only compatible with simple .srt files.")
 
     parser.add_argument("--language", "-l", metavar="LANG", type=str, dest="language", default=None,
-                        help="Listed language code of the subtitle. if this argument is set then the script will "
-                             "check that the language of the content matches LANG. If they don't match an empty "
-                             "file called \"[SUB].lang-warn\" will be created alongside the subtitle file. "
-                             "Language code according to 2-letter ISO-639, "
-                             "[LANG] may contain :forced or other \":<tag>\"")
+                        help="2-letter ISO-639 language. If this argument is set then the script will "
+                             "check that the language of the content matches LANG and report results to log. "
+                             "code may contain :forced or other \":<tag>\"")
 
     parser.add_argument("--dry-run", "-n", action="store_true", dest="dry_run",
                         help="Dry run: If flag is set then nothing is printed and nothing is logged.")
