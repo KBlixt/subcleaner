@@ -26,13 +26,12 @@ class SubBlock(object):
 
     @staticmethod
     def _convert_to_timedelta(time) -> timedelta:
-        time = time.replace(".", ",")
+        time = time.replace(",", ".")
         split = time.split(":")
 
         return timedelta(hours=float(split[0]),
                          minutes=float(split[1]),
-                         seconds=float(split[2].split(",")[0]),
-                         milliseconds=float(split[2].split(",")[1]))
+                         seconds=float(split[2]))
 
     @staticmethod
     def _convert_from_timedelta(time: timedelta) -> str:
@@ -57,7 +56,7 @@ class SubBlock(object):
         hours_str = "0" * (2 - len(hours_str)) + hours_str
         minutes_str = "0" * (2 - len(minutes_str)) + minutes_str
         seconds_str = "0" * (2 - len(seconds_str)) + seconds_str
-        mill_str = mill_str + "0" * (3 - len(mill_str))
+        mill_str = "0" * (3 - len(mill_str)) + mill_str
 
         return hours_str + ":" + minutes_str + ":" + seconds_str + "," + mill_str
 
