@@ -7,8 +7,13 @@ in the file are analyzed.
 Once the script have identified ad-blocks they get removed and the remaining blocks 
 get re-indexed.
 
-The script can also determine the language in the script and inform if the language 
-in the file doesn't match up to the subtitle language label. this is optional.
+The script can also determine the language in the script and inform if the actual 
+language doesn't match up to the subtitle language label. This is optional. 
+It uses python langdetect package to detect what actual language is in the subtitle.
+However, running the language detection program takes a 
+couple of seconds extra (depending on hardware). so if you run a batch job be prepared
+for the extra time.
+
 
 # Installing
 Cloning and running with python3 should work. 
@@ -26,6 +31,9 @@ Then install the default config by testing to run the script with:
 
 the script comes with a default config that contains common regexes for 
 English and Swedish. Read the config section further down for more information.
+
+If you wish to run the script over an entire library I'd recommend using list
+in linux until I've added a library mode.
 
 # Bazarr
 Unlock the scripts full potential by running it after downloading a subtitle from 
@@ -77,3 +85,6 @@ __________________
 
 
 * Try to detect mixed blocks that are one row subtitle and one row ads.
+
+
+* library mode, run over an entire library
