@@ -53,7 +53,7 @@ def parse_args(directives: Directives) -> None:
                              "code may contain :forced or other \":<tag>\"")
 
     parser.add_argument("--dry-run", "-n", action="store_true", dest="dry_run",
-                        help="Dry run: If flag is set then nothing is printed and nothing is logged.")
+                        help="Dry run: If flag is set then no files are modified.")
 
     parser.add_argument("--silent", "-s", action="store_true", dest="silent",
                         help="Silent: If flag is set then script don't print to console.")
