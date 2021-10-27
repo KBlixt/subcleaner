@@ -20,19 +20,32 @@ You can also make the script executable, the shebang is already in place
 
 ```cd sub-cleaner```
 
+Then run the script with:
+
 ```python3 ./sub-cleaner.py path/to/subtitle.srt```
 
+
+the script comes with a default config that contains common regexes for 
+English and Swedish. Remove what you don't need and 
+
+# Bazarr
 Unlock the scripts full potential by running it after downloading a subtitle from 
 [Bazarr](https://github.com/morpheus65535/bazarr). Enable custom post-processing and use
 the command:
 
-```python3 /path/to/sub-cleaner/sub-cleaner.py "{{subtitles}}"``` (note the quotation)
+```python3 /path/to/sub-cleaner/sub-cleaner.py "{{subtitles}}" -s``` (note the quotation)
 
 If you run Bazarr in a docker container, as you should,
 make sure the Bazarr container have access to the script directory. Either
 mount /opt/sub-cleaner into the container as a volume or install the directory inside 
 the Bazarr config directory. It should work 
 right out the gate provided the paths and permissions are set up correctly.
+
+If you wish to add language checking add ``` -l {{subtitles_language_code2}}"``` to the end of 
+the command. It doesn't do anything currently but log a 
+WARNING in the logfile if the language doesn't match with the labeled. in the future 
+I hope it'll automatically delete miss-labeled languages and add them to
+the bazarr blacklist in order to automatically trigger a re-download.
 
 # Config
 In the settings.config you can change regex and logging file.

@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from configparser import ConfigParser
 from .cleaner import clean
 from .subtitle import Subtitle
-from langdetect import detect
+from libs.langdetect import detect
 from datetime import datetime
 from .directives import Directives
 
@@ -13,9 +13,9 @@ def main(package_dir: Path):
     subtitle: Subtitle
 
     directives = Directives()
-    config_file: Path = package_dir.joinpath("settings.config")
+    config_file: Path = package_dir.joinpath("subcleaner.conf")
     if not config_file.is_file():
-        config_file.write_text(package_dir.joinpath("example-settings.config").read_text())
+        config_file.write_text(package_dir.joinpath("default-config", "subcleaner.conf").read_text())
 
     parse_args(directives)
     parse_config(config_file, directives, package_dir)
@@ -100,8 +100,10 @@ def parse_config(config_file: Path, directives: Directives, package_dir: Path) -
     for regex in list(cfg.items("REGEX")):
         if len(regex[1]) != 0:
             directives.regex_list.append(regex[1])
-
-    directives.log_dir = Path(cfg["SETTINGS"].get("log_dir", "log"))
+    try:
+        directives.log_dir = Path(cfg["SETTINGS"].get("log_dir", "log"))
+    except KeyError:
+        directives.log_dir = Path("log")
     if not directives.log_dir.is_absolute():
         directives.log_dir = package_dir.joinpath(directives.log_dir)
 
