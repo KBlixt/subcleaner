@@ -40,7 +40,7 @@ def main(package_dir: Path):
 def parse_args(directives: Directives) -> None:
     parser = ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
                                         "Can also check so that the language match language-label. "
-                                        "Edit the settings.config file to change regex filter and "
+                                        "Edit the subcleaner.conf file to change regex filter and "
                                         "where to store log.")
 
     parser.add_argument("subtitle", metavar="SUB", type=Path, default=None,
