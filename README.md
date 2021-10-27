@@ -70,6 +70,10 @@ Please, If you find any issues or a useful regex, feel free to share in "Issues"
 
 __________________
 ###### Future:
-Specific language regexes.
+* Language specific regexes.
 
-Automatic subtitle deletion if language don't match label.
+
+* Automatic subtitle deletion if language don't match label. (need bazarr to blacklist removed files for this to be implemented)
+
+
+* Try to detect mixed blocks that are one row subtitle and one row ads.
