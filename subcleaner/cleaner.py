@@ -53,7 +53,7 @@ def _remove_ads_start(subtitle: Subtitle) -> list:
     if best_match_index == 0:
         return []
 
-    considered_blocks = list(blocks[max(0, best_match_index - 2): min(len(blocks), best_match_index + 2)])
+    considered_blocks = list(blocks[max(0, best_match_index - 6): min(len(blocks), best_match_index + 6)])
     for block in considered_blocks:
         if block.regex_matches > 0:
             delete_blocks.append(block)
@@ -63,7 +63,7 @@ def _remove_ads_start(subtitle: Subtitle) -> list:
 def _remove_ads_end(subtitle: Subtitle) -> list:
     delete_blocks: list = list()
     blocks: list = subtitle.blocks
-    min_index: int = max(0, len(blocks) - 10)
+    min_index: int = max(0, len(blocks) - 30)
     best_match_index: int = 0
     highest_score: int = 0
 
@@ -75,7 +75,7 @@ def _remove_ads_end(subtitle: Subtitle) -> list:
     if best_match_index == 0:
         return []
 
-    considered_blocks = list(blocks[max(0, best_match_index - 2): min(len(blocks), best_match_index + 2)])
+    considered_blocks = list(blocks[max(0, best_match_index - 6): min(len(blocks), best_match_index + 6)])
     for block in considered_blocks:
         if block.regex_matches > 0:
             delete_blocks.append(block)
