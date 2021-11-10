@@ -196,12 +196,22 @@ def parse_config(config_file: Path, package_dir: Path) -> None:
 
     cfg = ConfigParser()
     cfg.read(str(config_file))
-    for regex in list(cfg.items("PURGE_REGEX")):
-        if len(regex[1]) != 0:
-            cleaner.purge_regex_list.append(regex[1])
-    for regex in list(cfg.items("WARNING_REGEX")):
-        if len(regex[1]) != 0:
-            cleaner.warning_regex_list.append(regex[1])
+
+    if "REGEX" in cfg.items() and "PURGE_REGEX" not in cfg.items():
+        # for backwards-compatibility:
+        for regex in list(cfg.items("REGEX")):
+            if len(regex[1]) != 0:
+                cleaner.purge_regex_list.append(regex[1])
+        print("Config file is out of date. Converting the config file to follow latest config-layout will enable "
+              "more granular ad-detection and warnings.")
+    else:
+        for regex in list(cfg.items("PURGE_REGEX")):
+            if len(regex[1]) != 0:
+                cleaner.purge_regex_list.append(regex[1])
+
+        for regex in list(cfg.items("WARNING_REGEX")):
+            if len(regex[1]) != 0:
+                cleaner.warning_regex_list.append(regex[1])
 
     global log_dir
     try:
