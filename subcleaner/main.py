@@ -62,7 +62,11 @@ def destroy_clean(subtitle_file: Path) -> None:
 
 
 def clean(subtitle_file: Path) -> None:
-    subtitle = Subtitle(subtitle_file)
+    try:
+        subtitle = Subtitle(subtitle_file)
+    except UnicodeDecodeError as e:
+        print("subcleaner was unable to decode file: \"" + str(subtitle_file) + "\n\" reason: \"" + e.reason + "\"")
+        return
 
     cleaner.run_regex(subtitle)
     cleaner.find_ads(subtitle)
