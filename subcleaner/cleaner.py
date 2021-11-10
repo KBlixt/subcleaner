@@ -1,6 +1,6 @@
 from .subtitle import Subtitle
 from .sub_block import SubBlock
-from re import findall, IGNORECASE
+from re import findall, IGNORECASE, UNICODE
 from datetime import timedelta
 
 
@@ -17,14 +17,14 @@ class Cleaner(object):
         blocks = subtitle.blocks
         for block in blocks:
             for regex in self.purge_regex_list:
-                result = findall(regex, block.content.replace("\n", " "), flags=IGNORECASE)
+                result = findall(regex, block.content.replace("\n", " ").strip(), flags=IGNORECASE | UNICODE)
                 if result is not None and len(result) > 0:
                     block.regex_matches = 3
                     break
 
             for regex in self.warning_regex_list:
-                result = findall(regex, block.content.replace("\n", " "), flags=IGNORECASE)
-                if result is not None:
+                result = findall(regex, block.content.replace("\n", " ").strip(), flags=IGNORECASE | UNICODE)
+                if result is not None and len(result) > 0:
                     block.regex_matches += len(result)
 
         for index in range(0, len(subtitle.blocks)):
