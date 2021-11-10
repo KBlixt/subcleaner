@@ -85,6 +85,3 @@ __________________
 
 
 * Try to detect mixed blocks that are one row subtitle and one row ads.
-
-
-* library mode, run over an entire library
