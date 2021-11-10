@@ -18,10 +18,9 @@ no_log: bool
 
 
 def main(package_dir: Path):
-    config_file: Path = package_dir.joinpath("subcleaner.conf")
 
+    parse_config(package_dir)
     parse_args()
-    parse_config(config_file, package_dir)
 
     if destroy_list is not None:
         destroy_clean(single_subtitle_file)
@@ -194,7 +193,9 @@ def parse_args() -> None:
         exit()
 
 
-def parse_config(config_file: Path, package_dir: Path) -> None:
+def parse_config(package_dir: Path) -> None:
+    config_file: Path = package_dir.joinpath("subcleaner.conf")
+
     if not config_file.is_file():
         config_file.write_text(package_dir.joinpath("default-config", "subcleaner.conf").read_text())
 

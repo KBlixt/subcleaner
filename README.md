@@ -27,7 +27,7 @@ You can also make the script executable, the shebang is already in place
 
 Then install the default config by testing to run the script with:
 
-```python3 ./subcleaner.py -h```
+```python3 ./subcleaner.py```
 
 the script comes with a default config that contains common regexes for 
 English and Swedish. Read the config section further down for more information.
