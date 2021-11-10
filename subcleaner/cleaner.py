@@ -28,9 +28,10 @@ class Cleaner(object):
                     block.regex_matches += len(result)
 
         for index in range(len(subtitle.blocks)):
-            for block in subtitle.blocks[min(index-10, index): max(index+10, len(subtitle.blocks))]:
+            for block in subtitle.blocks[max(index-10, index): min(index+10, len(subtitle.blocks))]:
                 if block.regex_matches >= 3:
                     subtitle.blocks[index].regex_matches += 1
+                    break
 
     @staticmethod
     def remove_ads(subtitle: Subtitle):
