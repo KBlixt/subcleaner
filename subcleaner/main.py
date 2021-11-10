@@ -254,7 +254,7 @@ def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
     elif subtitle.check_language(language):
         report += "    [INFO]: Subtitle language match file label. \n"
     else:
-        report += "    [WARNING]: Detected language does not match file label.\n"
+        report += "    [WARNING]: Subtitle language does not match file label.\n"
 
     if len(subtitle.ad_blocks) > 0:
         report += "    [INFO]: Removed " + str(len(subtitle.ad_blocks)) + " subtitle blocks:\n"
