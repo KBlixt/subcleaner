@@ -196,8 +196,9 @@ def parse_config(config_file: Path, package_dir: Path) -> None:
 
     cfg = ConfigParser()
     cfg.read(str(config_file))
+    sections = cfg.sections()
 
-    if "REGEX" in cfg.items() and "PURGE_REGEX" not in cfg.items():
+    if "REGEX" in sections and "PURGE_REGEX" not in sections:
         # for backwards-compatibility:
         for regex in list(cfg.items("REGEX")):
             if len(regex[1]) != 0:
