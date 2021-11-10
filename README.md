@@ -1,9 +1,6 @@
 # Subcleaner
 Subcleaner is a python3 script for removing ads from .srt subtitle files.
 The script is more sophisticated than a simple search and delete per line.
-It matches each block against all regexes included in the config. Then the blocks that 
-have the most matches gets removed. only the first 15min / last 10 blocks 
-in the file are analyzed.
 Once the script have identified ad-blocks they get removed and the remaining blocks 
 get re-indexed.
 
