@@ -32,9 +32,6 @@ Then install the default config by testing to run the script with:
 the script comes with a default config that contains common regexes for 
 English and Swedish. Read the config section further down for more information.
 
-If you wish to run the script over an entire library I'd recommend using list
-in linux until I've added a library mode.
-
 # Bazarr
 Unlock the scripts full potential by running it after downloading a subtitle from 
 [Bazarr](https://github.com/morpheus65535/bazarr). Enable custom post-processing and use
@@ -68,13 +65,15 @@ English subtitles and Swedish
 
 ### Regex:
 Editing the regex fields changes what regex is used for ad-detection. 
-Regex should aim towards matching ads exclusively. 
+Regex should aim towards matching ads exclusively. note that there are two categories
+of regexes. purge_regex will remove all matches while warning_regex is more 
+conditional. Read the config file for more info or ask me directly :)
 
 ### Logging:
 Changing log_path changes where the removed subtitle blocks are logged.
 
 # Thank you :)
-Please, If you find any issues or a useful regex, feel free to share in "Issues".
+Please, If you find any issues or a useful regex, feel free to let me know.
 
 __________________
 ###### Future:
