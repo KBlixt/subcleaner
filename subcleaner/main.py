@@ -116,19 +116,19 @@ def parse_args() -> None:
                              "Script currently only compatible with simple .srt files.")
 
     parser.add_argument("--language", "-l", metavar="LANG", type=str, dest="language", default=None,
-                        help="2-letter ISO-639 language. If this argument is set then the script will "
+                        help="2-letter ISO-639 language code. If this argument is set then the script will "
                              "check that the language of the content matches LANG and report results to log. "
                              "code may contain :forced or other \"LANG:<tag>\" but these tags will be ignored")
 
     parser.add_argument("--library", "-r", metavar="LIB", type=Path, dest="library", default=None,
-                        help="Run the script also on any subtitle found under directory LIB. "
+                        help="Run the script also on any subtitle found recursively under directory LIB. "
                              "If LANG is specified it will only run it on subtitles that have a "
                              "language label matching the LANG code.")
 
     parser.add_argument("--destroy", "-d", type=int, nargs="+", default=None,
-                        help="index of blocks to remove from SUB, this option is not compatible with library option."
-                             "when this option is passed the script will only remove the specified blocks."
-                             "The subtitle will be re-indexed after. "
+                        help="index of blocks to remove from SUB, this option is not compatible with the "
+                             "library option. When this option is passed the script will only remove the "
+                             "specified blocks. The subtitle will be re-indexed after. "
                              "Example to destroy block 4 and 78: -d 4 78")
 
     parser.add_argument("--dry-run", "-n", action="store_true", dest="dry_run",
