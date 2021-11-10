@@ -3,20 +3,18 @@ from math import floor
 
 
 class SubBlock(object):
-    orig_index: int
+    index: int
     content: str
     start_time: timedelta
     stop_time: timedelta
     regex_matches: int
-    keep: bool
 
     def __init__(self, orig_index):
-        self.orig_index = orig_index
-        self.keep = True
+        self.index = orig_index
         self.regex_matches = 0
         self.content = ""
-        self.stop_time = timedelta()
-        self.start_time = timedelta()
+        self.start_time = None
+        self.stop_time = None
 
     def set_start_time(self, time: str) -> None:
         self.start_time = self._convert_to_timedelta(time)

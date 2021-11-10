@@ -1,56 +1,132 @@
 from pathlib import Path
 from argparse import ArgumentParser
 from configparser import ConfigParser
-from .cleaner import clean
+from .cleaner import Cleaner
 from .subtitle import Subtitle
-from libs.langdetect import detect
 from datetime import datetime
-from .directives import Directives
+
+
+cleaner: Cleaner = Cleaner()
+single_subtitle_file: Path
+library_dir: Path
+destroy_list: list
+log_dir: Path
+language: str
+dry_run: bool
+silent: bool
+no_log: bool
 
 
 def main(package_dir: Path):
-    deleted_blocks: list
-    subtitle: Subtitle
-
-    directives = Directives()
     config_file: Path = package_dir.joinpath("subcleaner.conf")
-    if not config_file.is_file():
-        config_file.write_text(package_dir.joinpath("default-config", "subcleaner.conf").read_text())
 
-    parse_args(directives)
-    parse_config(config_file, directives, package_dir)
+    parse_args()
+    parse_config(config_file, package_dir)
 
-    subtitle_content: str = read_file(directives.subtitle_file)
+    if destroy_list is not None:
+        destroy_clean(single_subtitle_file)
+        return
 
-    subtitle = Subtitle(subtitle_content)
-    deleted_blocks = clean(subtitle, directives.regex_list)
-    detected_language: str = detect(subtitle_content)
+    if single_subtitle_file is not None:
+        clean(single_subtitle_file)
 
-    if not directives.dry_run:
-        write_file(directives.subtitle_file, str(subtitle))
-
-    out_string = generate_out(deleted_blocks, directives, detected_language)
-    if not directives.no_log and directives.log_dir is not None:
-        append_file(directives.log_dir.joinpath("subcleaner.log"), generate_log(out_string))
-
-    if not directives.silent:
-        print(out_string)
+    if library_dir is not None:
+        clean_directory(library_dir)
 
 
-def parse_args(directives: Directives) -> None:
+def destroy_clean(subtitle_file: Path) -> None:
+    subtitle = Subtitle(subtitle_file)
+
+    cleaner.run_regex(subtitle)
+    cleaner.find_ads(subtitle)
+
+    for block in subtitle.blocks:
+        if block.index in destroy_list:
+            subtitle.ad_blocks.append(block)
+            try:
+                subtitle.warning_blocks.remove(block)
+            except ValueError:
+                pass
+    cleaner.remove_ads(subtitle)
+    cleaner.fix_overlap(subtitle)
+
+    out = generate_out(subtitle_file, subtitle)
+    if not silent:
+        print(out)
+
+    if not no_log and log_dir is not None:
+        append_file(log_dir.joinpath("subcleaner.log"), generate_log(out))
+
+    if not dry_run:
+        write_file(subtitle_file, str(subtitle))
+
+
+def clean(subtitle_file: Path) -> None:
+    subtitle = Subtitle(subtitle_file)
+
+    cleaner.run_regex(subtitle)
+    cleaner.find_ads(subtitle)
+    cleaner.remove_ads(subtitle)
+    cleaner.fix_overlap(subtitle)
+
+    out = generate_out(subtitle_file, subtitle)
+    if not silent:
+        print(out)
+
+    if not no_log and log_dir is not None:
+        append_file(log_dir.joinpath("subcleaner.log"), generate_log(out))
+
+    if not dry_run:
+        write_file(subtitle_file, str(subtitle))
+
+
+def clean_directory(directory: Path) -> None:
+    for file in directory.iterdir():
+        if file.is_dir() and not file.is_symlink():
+            clean_directory(file)
+
+        try:
+            if file.is_file():
+                extensions = file.name.split(".")
+                if extensions[-1] != "srt":
+                    continue
+                if language is not None:
+                    if extensions[-2] == language:
+                        clean(file)
+                        continue
+                    if extensions[-3] == language:
+                        clean(file)
+                else:
+                    clean(file)
+        except IndexError:
+            continue
+
+
+def parse_args() -> None:
     parser = ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
                                         "Can also check so that the language match language-label. "
                                         "Edit the subcleaner.conf file to change regex filter and "
                                         "where to store log.")
 
-    parser.add_argument("subtitle", metavar="SUB", type=Path, default=None,
+    parser.add_argument("subtitle", metavar="SUB", type=Path, default=None, nargs="?",
                         help="Path to subtitle to run script against. "
                              "Script currently only compatible with simple .srt files.")
 
     parser.add_argument("--language", "-l", metavar="LANG", type=str, dest="language", default=None,
                         help="2-letter ISO-639 language. If this argument is set then the script will "
                              "check that the language of the content matches LANG and report results to log. "
-                             "code may contain :forced or other \":<tag>\"")
+                             "code may contain :forced or other \"LANG:<tag>\" but these tags will be ignored")
+
+    parser.add_argument("--library", "-r", metavar="LIB", type=Path, dest="library", default=None,
+                        help="Run the script also on any subtitle found under directory LIB. "
+                             "If LANG is specified it will only run it on subtitles that have a "
+                             "language label matching the LANG code.")
+
+    parser.add_argument("--destroy", "-d", type=int, nargs="+", default=None,
+                        help="index of blocks to remove from SUB, this option is not compatible with library option."
+                             "when this option is passed the script will only remove the specified blocks."
+                             "The subtitle will be re-indexed after. "
+                             "Example to destroy block 4 and 78: -d 4 78")
 
     parser.add_argument("--dry-run", "-n", action="store_true", dest="dry_run",
                         help="Dry run: If flag is set then no files are modified.")
@@ -65,63 +141,82 @@ def parse_args(directives: Directives) -> None:
 
     # check usage:
 
-    subtitle_file: Path = args.subtitle
-    if subtitle_file is None:
+    if args.subtitle is None and args.library is None:
         parser.print_help()
         exit()
 
-    if not subtitle_file.is_absolute():
-        subtitle_file = Path.cwd().joinpath(subtitle_file)
-
-    if not subtitle_file.is_file() or subtitle_file.name[-4:] != ".srt":
-        print("make sure that the subtitle file is a .srt file")
-        print("--help for more information.")
-        exit()
-    directives.subtitle_file = subtitle_file
-
-    language: str = args.language
-    if language is not None:
-        language = language.split(":")[0].replace("\"", "").lower()
-        if len(language) != 2:
-            print("Use 2-letter ISO-639 standard language code.")
-            print("received: " + args.language + " -> " + language)
+    global library_dir
+    library_dir = args.library
+    if library_dir is not None:
+        if not library_dir.is_absolute():
+            library_dir = Path.cwd().joinpath(library_dir)
+        if not library_dir.is_dir():
+            print("make sure that the library path is a directory.")
             print("--help for more information.")
             exit()
-        directives.language = language
 
-    directives.silent = args.silent
-    directives.no_log = args.no_log
-    directives.dry_run = args.dry_run
+    global single_subtitle_file
+    single_subtitle_file = args.subtitle
+    if single_subtitle_file is not None:
+        if not single_subtitle_file.is_absolute():
+            single_subtitle_file = Path.cwd().joinpath(single_subtitle_file)
+        if not single_subtitle_file.is_file() or single_subtitle_file.name[-4:] != ".srt":
+            print("make sure that the subtitle file is a .srt file.")
+            print("--help for more information.")
+            exit()
+
+    global language
+    if args.language is not None:
+        language = args.language.split(":")[0].replace("\"", "").lower()
+        if len(language) != 2:
+            print("use 2-letter ISO-639 standard language code.")
+            print("received language: " + language)
+            print("--help for more information.")
+            exit()
+    else:
+        language = None
+
+    global silent
+    silent = args.silent
+    global no_log
+    no_log = args.no_log
+    global dry_run
+    dry_run = args.dry_run
+    global destroy_list
+    destroy_list = args.destroy
+    if destroy_list is not None and single_subtitle_file is None:
+        print("option --destroy require a subtitle file to be specified.")
+        print("see --help for more info.")
+        exit()
 
 
-def parse_config(config_file: Path, directives: Directives, package_dir: Path) -> None:
+def parse_config(config_file: Path, package_dir: Path) -> None:
+    if not config_file.is_file():
+        config_file.write_text(package_dir.joinpath("default-config", "subcleaner.conf").read_text())
+
     cfg = ConfigParser()
     cfg.read(str(config_file))
-    for regex in list(cfg.items("REGEX")):
+    for regex in list(cfg.items("PURGE_REGEX")):
         if len(regex[1]) != 0:
-            directives.regex_list.append(regex[1])
+            cleaner.purge_regex_list.append(regex[1])
+    for regex in list(cfg.items("WARNING_REGEX")):
+        if len(regex[1]) != 0:
+            cleaner.warning_regex_list.append(regex[1])
+
+    global log_dir
     try:
-        directives.log_dir = Path(cfg["SETTINGS"].get("log_dir", "log"))
+        log_dir = Path(cfg["SETTINGS"].get("log_dir", "log"))
     except KeyError:
-        directives.log_dir = Path("log")
-    if not directives.log_dir.is_absolute():
-        directives.log_dir = package_dir.joinpath(directives.log_dir)
+        log_dir = Path("log")
+    if not log_dir.is_absolute():
+        log_dir = package_dir.joinpath(log_dir)
 
     try:
-        directives.log_dir.mkdir()
+        log_dir.mkdir()
     except FileExistsError:
-        if directives.log_dir.is_file():
+        if log_dir.is_file():
             print("WARN: configured log directory is a file. Logging disabled.")
-            directives.log_dir = None
-
-
-def read_file(file_path: Path) -> str:
-    try:
-        with file_path.open("r") as file:
-            return file.read()
-    except UnicodeDecodeError:
-        print("UnicodeDecodeError, unable to read file")
-        exit()
+            log_dir = None
 
 
 def write_file(file_path: Path, content: str) -> None:
@@ -138,44 +233,35 @@ def generate_log(out_string: str) -> str:
     return "\n".join(str(datetime.now())[:19] + ": " + line for line in out_string.split("\n")) + "\n"
 
 
-def generate_out(deleted_blocks: list, directives, detected_language) -> str:
-    report = "SUBTITLE: \"" + str(directives.subtitle_file) + "\"\n"
-    if directives.dry_run:
+def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
+    report = "SUBTITLE: \"" + str(subtitle_file) + "\"\n"
+    if dry_run:
         report += "    [INFO]: Nothing will be altered, (Dry-run).\n"
-    if directives.language is None or detected_language is None:
+
+    if language is None:
         report += "    [INFO]: Didn't run language detection.\n"
-    elif directives.language == detected_language:
+    elif subtitle.check_language(language):
         report += "    [INFO]: Subtitle language match file label. \n"
     else:
-        report += "    [WARNING]: Detected language: \"" + detected_language + "\" does not match file label.\n"
+        report += "    [WARNING]: Detected language does not match file label.\n"
 
-    if len(deleted_blocks) > 0:
-        report += "    [INFO]: Removed " + str(len(deleted_blocks)) + " subtitle blocks:\n"
+    if len(subtitle.ad_blocks) > 0:
+        report += "    [INFO]: Removed " + str(len(subtitle.ad_blocks)) + " subtitle blocks:\n"
         report += "            [---------Removed Blocks----------]"
-        for block in deleted_blocks:
-            report += "\n            " + str(block.orig_index) + "\n            "
+        for block in subtitle.ad_blocks:
+            report += "\n            " + str(block.index) + "\n            "
             report += str(block).replace("\n", "\n            ")[:-12]
         report += "            [---------------------------------]\n"
     else:
-        report += "    [INFO]: Removed " + str(len(deleted_blocks)) + " subtitle blocks.\n"
+        report += "    [INFO]: Removed 0 subtitle blocks.\n"
 
+    if len(subtitle.warning_blocks) > 0:
+        report += "    [WARNING]: Potential ads in " + str(len(subtitle.warning_blocks)) + " subtitle blocks, please verify:\n"
+        report += "               [---------Warning Blocks----------]"
+        for block in subtitle.warning_blocks:
+            report += "\n               " + str(block.index) + "\n               "
+            report += str(block).replace("\n", "\n               ")[:-15]
+        report += "               [---------------------------------]\n"
+        report += "               To remove blocks use: subcleaner -d\n"
     report += "[---------------------------------------------------------------------------------]"
     return report
-
-
-def report_unicode_error(directives) -> str:
-    report = "SUBTITLE:     " + str(directives.subtitle_file) + "\"\n"
-    report += "    [WARNING]: Unable to decode subtitle.\n"
-    report += "[---------------------------------------------------------------------------------]"
-    return report
-
-
-if __name__ == '__main__':
-    try:
-        print("main")
-    except KeyboardInterrupt:
-        print("Interrupted")
-        exit()
-    except UnicodeDecodeError:
-        print("Unable to read file, Unicode decode error")
-        exit()
