@@ -1,3 +1,4 @@
+from glob import glob
 from pathlib import Path
 from argparse import ArgumentParser
 from configparser import ConfigParser
@@ -126,8 +127,12 @@ def parse_args() -> None:
     if library_dir is not None:
         if not library_dir.is_absolute():
             library_dir = Path.cwd().joinpath(library_dir)
+        glob_library_dir = glob(str(library_dir))
+        if len(glob_library_dir) == 1:
+            library_dir = Path(glob_library_dir[0])
+
         if not library_dir.is_dir():
-            print("'" + str(args.library) + "' is not a path to a directory.")
+            print("'" + str(args.library) + "' is not a path to a single directory.")
             print("--help for more information.")
             exit()
 
@@ -136,8 +141,12 @@ def parse_args() -> None:
     if single_subtitle_file is not None:
         if not single_subtitle_file.is_absolute():
             single_subtitle_file = Path.cwd().joinpath(single_subtitle_file)
+        glob_single_subtitle_file = glob(str(single_subtitle_file))
+        if len(glob_single_subtitle_file) == 1:
+            single_subtitle_file = Path(glob_single_subtitle_file[0])
+
         if not single_subtitle_file.is_file() or single_subtitle_file.name[-4:] != ".srt":
-            print("'" + str(args.subtitle) + "' is not a path to a srt file.")
+            print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
             print("--help for more information.")
             exit()
 
