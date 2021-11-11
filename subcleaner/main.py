@@ -144,36 +144,34 @@ def parse_args() -> None:
         if not single_subtitle_file.is_absolute():
             single_subtitle_file = Path.cwd().joinpath(single_subtitle_file)
 
-        dir_list = glob(str(single_subtitle_file.parent))
-        if len(dir_list) != 1:
-            print("'" + str(args.subtitle) + "' is not a path to a single srt file..")
-            print("--help for more information.")
-            exit()
-        dir_path = Path(dir_list[0])
+        if not (single_subtitle_file.is_file() and single_subtitle_file.name[-4:] != ".srt"):
+            dir_list = glob(str(single_subtitle_file.parent))
+            if len(dir_list) != 1:
+                print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
+                print("--help for more information.")
+                exit()
+            dir_path = Path(dir_list[0])
 
-        name_list = list()
-        patten = escape(single_subtitle_file.name) \
-            .replace("\\*", ".*").replace("\\?", "?").replace("\\[", "[").replace("\\]", "]").replace("[!", "[^")
+            name_list = list()
+            patten = escape(single_subtitle_file.name) \
+                .replace("\\*", ".*").replace("\\?", "?").replace("\\[", "[").replace("\\]", "]").replace("[!", "[^")
 
-        for file in dir_path.iterdir():
-            print(patten)
-            print(file.name)
-            if match(patten, file.name, flags=UNICODE):
-                name_list.append(file.name)
+            for file in dir_path.iterdir():
+                if match(patten, file.name, flags=UNICODE):
+                    name_list.append(file.name)
 
-        if len(name_list) != 1:
-            print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
-            print("--help for more information.")
-            print(str(name_list))
-            exit()
-        name = name_list[0]
+            if len(name_list) != 1:
+                print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
+                print("--help for more information.")
+                exit()
+            name = name_list[0]
 
-        single_subtitle_file = dir_path.joinpath(name)
+            single_subtitle_file = dir_path.joinpath(name)
 
-        if not single_subtitle_file.is_file() or single_subtitle_file.name[-4:] != ".srt":
-            print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
-            print("--help for more information.")
-            exit()
+            if not single_subtitle_file.is_file() or single_subtitle_file.name[-4:] != ".srt":
+                print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
+                print("--help for more information.")
+                exit()
 
     global language
     if args.language is not None:
