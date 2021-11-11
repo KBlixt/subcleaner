@@ -8,17 +8,17 @@ class Subtitle(object):
     ad_blocks: list
     warning_blocks: list
 
-    def __init__(self, subtitle_file: Path):
+    def __init__(self, subtitle_file: Path, destroy_list: list):
         self.blocks: list = list()
         self.ad_blocks = []
         self.warning_blocks = []
 
-        try:
-            with subtitle_file.open("r") as file:
-                self._parse(file.read())
-        except UnicodeDecodeError as e:
-            print("subcleaner was unable to decode file: \"" + str(subtitle_file) + "\n\" reason: \"" + e.reason + "\"")
-            return
+        with subtitle_file.open("r") as file:
+            self._parse(file.read())
+
+        if destroy_list is not None:
+            for index in destroy_list:
+                self.blocks[index-1].regex_matches = 3
 
     def add_block(self, block: SubBlock) -> None:
         self.blocks.append(block)

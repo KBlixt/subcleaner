@@ -16,6 +16,10 @@ class Cleaner(object):
     def run_regex(self, subtitle: Subtitle):
         blocks = subtitle.blocks
         for block in blocks:
+            if len(block.content.strip(" -_.")) == 0:
+                block.regex_matches = 3
+                break
+
             for regex in self.purge_regex_list:
                 result = findall(regex, block.content.replace("\n", " ").strip(), flags=IGNORECASE | UNICODE)
                 if result is not None and len(result) > 0:
@@ -26,9 +30,17 @@ class Cleaner(object):
                 result = findall(regex, block.content.replace("\n", " ").strip(), flags=IGNORECASE | UNICODE)
                 if result is not None and len(result) > 0:
                     block.regex_matches += len(result)
+            if block.regex_matches == 0:
+                block.regex_matches = -1
 
         for index in range(0, len(subtitle.blocks)):
-            for block in subtitle.blocks[max(index-15, 0): min(index+15, len(subtitle.blocks))]:
+            for block in subtitle.blocks[max(index-15, 0): min(index+16, len(subtitle.blocks))]:
+                if block.regex_matches >= 3:
+                    subtitle.blocks[index].regex_matches += 1
+                    break
+
+        for index in range(0, len(subtitle.blocks)):
+            for block in subtitle.blocks[max(index-1, 0): min(index+2, len(subtitle.blocks))]:
                 if block.regex_matches >= 3:
                     subtitle.blocks[index].regex_matches += 1
                     break

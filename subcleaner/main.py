@@ -22,47 +22,19 @@ def main(package_dir: Path):
     parse_config(package_dir)
     parse_args()
 
-    if destroy_list is not None:
-        destroy_clean(single_subtitle_file)
-        return
-
     if single_subtitle_file is not None:
-        clean(single_subtitle_file)
+        clean_file(single_subtitle_file)
+
+    if destroy_list is not None:
+        return
 
     if library_dir is not None:
         clean_directory(library_dir)
 
 
-def destroy_clean(subtitle_file: Path) -> None:
-    subtitle = Subtitle(subtitle_file)
-
-    cleaner.run_regex(subtitle)
-    cleaner.find_ads(subtitle)
-
-    for block in subtitle.blocks:
-        if block.index in destroy_list:
-            subtitle.ad_blocks.append(block)
-            try:
-                subtitle.warning_blocks.remove(block)
-            except ValueError:
-                pass
-    cleaner.remove_ads(subtitle)
-    cleaner.fix_overlap(subtitle)
-
-    out = generate_out(subtitle_file, subtitle)
-    if not silent:
-        print(out)
-
-    if not no_log and log_dir is not None:
-        append_file(log_dir.joinpath("subcleaner.log"), generate_log(out))
-
-    if not dry_run:
-        write_file(subtitle_file, str(subtitle))
-
-
-def clean(subtitle_file: Path) -> None:
+def clean_file(subtitle_file: Path) -> None:
     try:
-        subtitle = Subtitle(subtitle_file)
+        subtitle = Subtitle(subtitle_file, destroy_list)
     except UnicodeDecodeError as e:
         print("subcleaner was unable to decode file: \"" + str(subtitle_file) + "\n\" reason: \"" + e.reason + "\"")
         return
@@ -72,12 +44,13 @@ def clean(subtitle_file: Path) -> None:
     cleaner.remove_ads(subtitle)
     cleaner.fix_overlap(subtitle)
 
-    out = generate_out(subtitle_file, subtitle)
-    if not silent:
-        print(out)
+    if not silent or not no_log:
+        out = generate_out(subtitle_file, subtitle)
+        if not silent:
+            print(out)
 
-    if not no_log and log_dir is not None:
-        append_file(log_dir.joinpath("subcleaner.log"), generate_log(out))
+        if not no_log and log_dir is not None:
+            append_file(log_dir.joinpath("subcleaner.log"), generate_log(out))
 
     if not dry_run:
         write_file(subtitle_file, str(subtitle))
@@ -95,12 +68,12 @@ def clean_directory(directory: Path) -> None:
                     continue
                 if language is not None:
                     if extensions[-2] == language:
-                        clean(file)
+                        clean_file(file)
                         continue
                     if extensions[-3] == language:
-                        clean(file)
+                        clean_file(file)
                 else:
-                    clean(file)
+                    clean_file(file)
         except IndexError:
             continue
 
