@@ -127,7 +127,7 @@ def parse_args() -> None:
         if not library_dir.is_absolute():
             library_dir = Path.cwd().joinpath(library_dir)
         if not library_dir.is_dir():
-            print("'" + args.library + "' is not a path to a directory.")
+            print("'" + str(args.library) + "' is not a path to a directory.")
             print("--help for more information.")
             exit()
 
@@ -137,7 +137,7 @@ def parse_args() -> None:
         if not single_subtitle_file.is_absolute():
             single_subtitle_file = Path.cwd().joinpath(single_subtitle_file)
         if not single_subtitle_file.is_file() or single_subtitle_file.name[-4:] != ".srt":
-            print("'" + args.subtitle + "' is not a path to a srt file.")
+            print("'" + str(args.subtitle) + "' is not a path to a srt file.")
             print("--help for more information.")
             exit()
 
