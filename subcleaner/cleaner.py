@@ -33,17 +33,26 @@ class Cleaner(object):
             if block.regex_matches == 0:
                 block.regex_matches = -1
 
-        for index in range(0, len(subtitle.blocks)):
-            for block in subtitle.blocks[max(index-15, 0): min(index+16, len(subtitle.blocks))]:
-                if block.regex_matches >= 3:
-                    subtitle.blocks[index].regex_matches += 1
-                    break
+        if len(blocks) >= 6:
+            for block in blocks[:3] + blocks[-3:]:
+                block.regex_matches += 1
 
-        for index in range(0, len(subtitle.blocks)):
-            for block in subtitle.blocks[max(index-1, 0): min(index+2, len(subtitle.blocks))]:
-                if block.regex_matches >= 3:
+        if len(blocks) >= 100:
+            for index in range(0, len(subtitle.blocks)):
+                for block in subtitle.blocks[max(index-15, 0): min(index+16, len(subtitle.blocks))]:
+                    if block.regex_matches >= 3:
+                        subtitle.blocks[index].regex_matches += 1
+                        break
+
+        if len(blocks) >= 10:
+            for index in range(0, len(subtitle.blocks)):
+                if index == 0 or index == len(subtitle.blocks)-1:
                     subtitle.blocks[index].regex_matches += 1
                     break
+                for block in subtitle.blocks[max(index-1, 0): min(index+2, len(subtitle.blocks))]:
+                    if block.regex_matches >= 3:
+                        subtitle.blocks[index].regex_matches += 1
+                        break
 
     @staticmethod
     def remove_ads(subtitle: Subtitle):
