@@ -144,7 +144,7 @@ def parse_args() -> None:
         if not single_subtitle_file.is_absolute():
             single_subtitle_file = Path.cwd().joinpath(single_subtitle_file)
 
-        if not (single_subtitle_file.is_file() and single_subtitle_file.name[-4:] != ".srt"):
+        if not (single_subtitle_file.is_file() and single_subtitle_file.name[-4:] == ".srt"):
             dir_list = glob(str(single_subtitle_file.parent))
             if len(dir_list) != 1:
                 print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
@@ -168,7 +168,7 @@ def parse_args() -> None:
 
             single_subtitle_file = dir_path.joinpath(name)
 
-            if not single_subtitle_file.is_file() or single_subtitle_file.name[-4:] != ".srt":
+            if not (single_subtitle_file.is_file() and single_subtitle_file.name[-4:] == ".srt"):
                 print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
                 print("--help for more information.")
                 exit()
