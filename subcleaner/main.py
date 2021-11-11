@@ -1,4 +1,5 @@
-from glob import glob
+import os
+from glob import glob, escape
 from pathlib import Path
 from argparse import ArgumentParser
 from configparser import ConfigParser
@@ -143,10 +144,13 @@ def parse_args() -> None:
         if not single_subtitle_file.is_absolute():
             single_subtitle_file = Path.cwd().joinpath(single_subtitle_file)
 
+        t = Path.cwd()
         glob_single_subtitle_file_dir = Path(glob(str(single_subtitle_file.parent))[0])
-        glob_single_subtitle_file = glob(str(glob_single_subtitle_file_dir.joinpath(single_subtitle_file.name)))
+        os.chdir(glob_single_subtitle_file_dir)
+        glob_single_subtitle_file = glob(single_subtitle_file.name)
+        os.chdir(t)
         if len(glob_single_subtitle_file) == 1:
-            single_subtitle_file = Path(glob_single_subtitle_file[0])
+            single_subtitle_file = glob_single_subtitle_file_dir.joinpath(glob_single_subtitle_file[0])
 
         if not single_subtitle_file.is_file() or single_subtitle_file.name[-4:] != ".srt":
             print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
