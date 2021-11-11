@@ -146,7 +146,7 @@ def parse_args() -> None:
 
         dir_list = glob(str(single_subtitle_file.parent))
         if len(dir_list) != 1:
-            print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
+            print("'" + str(args.subtitle) + "' is not a path to a single srt file..")
             print("--help for more information.")
             exit()
         dir_path = Path(dir_list[0])
