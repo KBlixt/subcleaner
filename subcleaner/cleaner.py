@@ -46,7 +46,7 @@ class Cleaner(object):
 
         if len(blocks) >= 10:
             for index in range(0, len(subtitle.blocks)):
-                if index == 0 or index == len(subtitle.blocks)-1:
+                if index < 5 or index > len(subtitle.blocks)-6:
                     subtitle.blocks[index].regex_matches += 1
                     break
                 for block in subtitle.blocks[max(index-1, 0): min(index+2, len(subtitle.blocks))]:
