@@ -127,7 +127,7 @@ def parse_args() -> None:
         if not library_dir.is_absolute():
             library_dir = Path.cwd().joinpath(library_dir)
         if not library_dir.is_dir():
-            print("make sure that the library path is a directory.")
+            print("'" + args.library + "' is not a path to a directory.")
             print("--help for more information.")
             exit()
 
@@ -137,7 +137,7 @@ def parse_args() -> None:
         if not single_subtitle_file.is_absolute():
             single_subtitle_file = Path.cwd().joinpath(single_subtitle_file)
         if not single_subtitle_file.is_file() or single_subtitle_file.name[-4:] != ".srt":
-            print("make sure that the subtitle file is a .srt file.")
+            print("'" + args.subtitle + "' is not a path to a srt file.")
             print("--help for more information.")
             exit()
 
@@ -145,8 +145,7 @@ def parse_args() -> None:
     if args.language is not None:
         language = args.language.split(":")[0].replace("\"", "").lower()
         if len(language) != 2:
-            print("use 2-letter ISO-639 standard language code.")
-            print("received language: " + language)
+            print("'" + args.language + "' does not contain a valid 2-letter ISO-639 language code.")
             print("--help for more information.")
             exit()
     else:
