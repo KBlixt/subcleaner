@@ -1,6 +1,5 @@
-import os
-from glob import glob, escape
-import re
+from glob import glob
+from re import match, escape, UNICODE
 from pathlib import Path
 from argparse import ArgumentParser
 from configparser import ConfigParser
@@ -145,13 +144,28 @@ def parse_args() -> None:
         if not single_subtitle_file.is_absolute():
             single_subtitle_file = Path.cwd().joinpath(single_subtitle_file)
 
-        glob_single_subtitle_file_dir = Path(glob(str(single_subtitle_file.parent))[0])
-        for file in glob_single_subtitle_file_dir.iterdir():
-            patten = re.escape(single_subtitle_file.name)\
-                .replace("\\*", ".*").replace("\\?", "?").replace("\\[", "[").replace("\\]", "]")
-            if re.match(patten.lower(), file.name.lower()):
-                single_subtitle_file = glob_single_subtitle_file_dir.joinpath(file)
-                break
+        dir_list = glob(str(single_subtitle_file.parent))
+        if len(dir_list) != 1:
+            print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
+            print("--help for more information.")
+            exit()
+        dir_path = Path(dir_list[0])
+
+        name_list = list()
+        for file in dir_path.iterdir():
+            patten = escape(single_subtitle_file.name)\
+                .replace("\\*", ".*").replace("\\?", "?").replace("\\[", "[").replace("\\]", "]").replace("[!", "[^")
+
+            if match(patten, file.name, flags=UNICODE):
+                name_list.append(file.name)
+
+        if len(name_list) != 1:
+            print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
+            print("--help for more information.")
+            exit()
+        name = name_list[0]
+
+        single_subtitle_file = dir_path.joinpath(name)
 
         if not single_subtitle_file.is_file() or single_subtitle_file.name[-4:] != ".srt":
             print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
