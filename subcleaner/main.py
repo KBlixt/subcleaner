@@ -139,9 +139,12 @@ def parse_args() -> None:
     global single_subtitle_file
     single_subtitle_file = args.subtitle
     if single_subtitle_file is not None:
+
         if not single_subtitle_file.is_absolute():
             single_subtitle_file = Path.cwd().joinpath(single_subtitle_file)
-        glob_single_subtitle_file = glob(str(single_subtitle_file))
+
+        glob_single_subtitle_file_dir = Path(glob(str(single_subtitle_file.parent))[0])
+        glob_single_subtitle_file = glob(str(glob_single_subtitle_file_dir.joinpath(single_subtitle_file.name)))
         if len(glob_single_subtitle_file) == 1:
             single_subtitle_file = Path(glob_single_subtitle_file[0])
 
