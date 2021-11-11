@@ -147,7 +147,10 @@ def parse_args() -> None:
         t = Path.cwd()
         glob_single_subtitle_file_dir = Path(glob(str(single_subtitle_file.parent))[0])
         os.chdir(glob_single_subtitle_file_dir)
-        glob_single_subtitle_file = glob(single_subtitle_file.name)
+        gen = glob_single_subtitle_file_dir.glob(single_subtitle_file.name)
+        glob_single_subtitle_file = list()
+        for h in gen:
+            glob_single_subtitle_file.append(h)
         os.chdir(t)
         if len(glob_single_subtitle_file) == 1:
             single_subtitle_file = glob_single_subtitle_file_dir.joinpath(glob_single_subtitle_file[0])
