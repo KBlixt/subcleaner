@@ -162,6 +162,7 @@ def parse_args() -> None:
         if len(name_list) != 1:
             print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
             print("--help for more information.")
+            print(str(name_list))
             exit()
         name = name_list[0]
 
