@@ -152,10 +152,12 @@ def parse_args() -> None:
         dir_path = Path(dir_list[0])
 
         name_list = list()
-        for file in dir_path.iterdir():
-            patten = escape(single_subtitle_file.name)\
-                .replace("\\*", ".*").replace("\\?", "?").replace("\\[", "[").replace("\\]", "]").replace("[!", "[^")
+        patten = escape(single_subtitle_file.name) \
+            .replace("\\*", ".*").replace("\\?", "?").replace("\\[", "[").replace("\\]", "]").replace("[!", "[^")
 
+        for file in dir_path.iterdir():
+            print(patten)
+            print(file.name)
             if match(patten, file.name, flags=UNICODE):
                 name_list.append(file.name)
 
