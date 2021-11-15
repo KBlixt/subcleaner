@@ -33,10 +33,6 @@ class Cleaner(object):
             if block.regex_matches == 0:
                 block.regex_matches = -1
 
-        if len(blocks) >= 6:
-            for block in blocks[:3] + blocks[-3:]:
-                block.regex_matches += 1
-
         if len(blocks) >= 100:
             for index in range(0, len(subtitle.blocks)):
                 for block in subtitle.blocks[max(index-15, 0): min(index+16, len(subtitle.blocks))]:
@@ -48,8 +44,8 @@ class Cleaner(object):
             for index in range(0, len(subtitle.blocks)):
                 if index < 5 or index > len(subtitle.blocks)-6:
                     subtitle.blocks[index].regex_matches += 1
-                    break
-                for block in subtitle.blocks[max(index-1, 0): min(index+2, len(subtitle.blocks))]:
+                    continue
+                for block in subtitle.blocks[index-1: index+2]:
                     if block.regex_matches >= 3:
                         subtitle.blocks[index].regex_matches += 1
                         break
