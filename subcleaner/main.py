@@ -108,8 +108,8 @@ def parse_args() -> None:
 
     parser.add_argument("--destroy", "-d", type=int, nargs="+", default=None,
                         help="index of blocks to remove from SUB, this option is not compatible with the "
-                             "library option. When this option is passed the script will only remove the "
-                             "specified blocks. The subtitle will be re-indexed after. "
+                             "library option. When this option is passed the script will manually mark the "
+                             "specified blocks as ads and then run normally. "
                              "Example to destroy block 4 and 78: -d 4 78")
 
     parser.add_argument("--dry-run", "-n", action="store_true", dest="dry_run",
