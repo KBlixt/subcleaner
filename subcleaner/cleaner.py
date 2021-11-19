@@ -54,7 +54,7 @@ class Cleaner(object):
     def remove_ads(subtitle: Subtitle):
         for block in subtitle.ad_blocks:
             subtitle.remove_block(block)
-        for index in range(len(subtitle.blocks) - 1):
+        for index in range(len(subtitle.blocks)):
             block: SubBlock = subtitle.blocks[index]
             block.index = index+1
 
