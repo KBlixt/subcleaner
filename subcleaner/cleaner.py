@@ -39,7 +39,7 @@ class Cleaner(object):
                     subtitle.blocks[index].regex_matches += 1
                     continue
                 for block in subtitle.blocks[max(0, index-1): min(index+2, len(subtitle.blocks))]:
-                    if block.regex_matches >= 2:
+                    if block.regex_matches >= 2 and index != block.index - 1:
                         subtitle.blocks[index].regex_matches += 1
                         break
 
