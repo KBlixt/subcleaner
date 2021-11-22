@@ -33,19 +33,19 @@ class Cleaner(object):
             if block.regex_matches == 0:
                 block.regex_matches = -1
 
-        if len(blocks) >= 100:
-            for index in range(0, len(subtitle.blocks)):
-                for block in subtitle.blocks[max(0, index-15): min(index+16, len(subtitle.blocks))]:
-                    if block.regex_matches >= 3:
-                        subtitle.blocks[index].regex_matches += 1
-                        break
-
         if len(blocks) >= 10:
             for index in range(0, len(subtitle.blocks)):
                 if index < 3 or index > len(subtitle.blocks)-4:
                     subtitle.blocks[index].regex_matches += 1
                     continue
                 for block in subtitle.blocks[max(0, index-1): min(index+2, len(subtitle.blocks))]:
+                    if block.regex_matches >= 2:
+                        subtitle.blocks[index].regex_matches += 1
+                        break
+
+        if len(blocks) >= 100:
+            for index in range(0, len(subtitle.blocks)):
+                for block in subtitle.blocks[max(0, index-15): min(index+16, len(subtitle.blocks))]:
                     if block.regex_matches >= 3:
                         subtitle.blocks[index].regex_matches += 1
                         break
@@ -60,12 +60,30 @@ class Cleaner(object):
 
     @staticmethod
     def find_ads(subtitle: Subtitle):
-        for block in subtitle.blocks:
-            block: SubBlock
+
+        for index in range(0, len(subtitle.blocks)):
+            block: SubBlock = subtitle.blocks[index]
+
             if block.regex_matches >= 3:
                 subtitle.ad_blocks.append(block)
+                continue
             elif block.regex_matches == 2:
                 subtitle.warning_blocks.append(block)
+                continue
+
+            if index == 0 or index == len(subtitle.blocks)-1:
+                continue
+
+            pre_block: SubBlock = subtitle.blocks[index - 1]
+            post_block: SubBlock = subtitle.blocks[index + 1]
+            if pre_block.regex_matches >= 3 and post_block.regex_matches >= 3:
+                if block.start_time - pre_block.stop_time < timedelta(seconds=1) and \
+                        post_block.start_time - block.stop_time < timedelta(seconds=1):
+                    subtitle.ad_blocks.append(block)
+                    continue
+                else:
+                    subtitle.warning_blocks.append(block)
+                    continue
 
     @staticmethod
     def fix_overlap(subtitle: Subtitle) -> None:
