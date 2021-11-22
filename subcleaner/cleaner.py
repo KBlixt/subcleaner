@@ -77,7 +77,7 @@ class Cleaner(object):
             pre_block: SubBlock = subtitle.blocks[index - 1]
             post_block: SubBlock = subtitle.blocks[index + 1]
             if pre_block.regex_matches >= 3 and post_block.regex_matches >= 3:
-                if block.start_time - pre_block.stop_time < timedelta(seconds=1.5):
+                if block.start_time - pre_block.stop_time < timedelta(seconds=2.5):
                     subtitle.ad_blocks.append(block)
                     continue
                 else:
