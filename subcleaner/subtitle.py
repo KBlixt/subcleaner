@@ -57,7 +57,9 @@ class Subtitle(object):
                 continue
 
             if block.stop_time is not None:
-                block.content = block.content + line + "\n"
+                block.content = block.content + line + "\n"''
+        if block.stop_time is not None:
+            self.blocks.append(block)
 
     def __repr__(self):
         sub_file_content = ""
