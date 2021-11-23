@@ -45,9 +45,6 @@ class Cleaner(object):
 
         if len(blocks) >= 100:
             for index in range(0, len(subtitle.blocks)):
-                if index < 15 or index > len(subtitle.blocks)-16:
-                    subtitle.blocks[index].regex_matches += 1
-                    continue
                 for block in subtitle.blocks[max(0, index-15): min(index+16, len(subtitle.blocks))]:
                     if block.regex_matches >= 3:
                         subtitle.blocks[index].regex_matches += 1
