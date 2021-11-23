@@ -1,9 +1,7 @@
 import random
 import re
 
-import six
-from six.moves import zip, xrange
-
+import libs.six as six
 from .lang_detect_exception import ErrorCode, LangDetectException
 from .language import Language
 from .utils.ngram import NGram
@@ -77,7 +75,7 @@ class Detector(object):
         '''Set prior information about language probabilities.'''
         self.prior_map = [0.0] * len(self.langlist)
         sump = 0.0
-        for i in xrange(len(self.prior_map)):
+        for i in range(len(self.prior_map)):
             lang = self.langlist[i]
             if lang in prior_map:
                 p = prior_map[lang]
@@ -87,7 +85,7 @@ class Detector(object):
                 sump += p
         if sump <= 0.0:
             raise LangDetectException(ErrorCode.InitParamError, 'More one of prior probability must be non-zero.')
-        for i in xrange(len(self.prior_map)):
+        for i in range(len(self.prior_map)):
             self.prior_map[i] /= sump
 
     def set_max_text_length(self, max_text_length):
@@ -105,7 +103,7 @@ class Detector(object):
         text = self.MAIL_RE.sub(' ', text)
         text = NGram.normalize_vi(text)
         pre = 0
-        for i in xrange(min(len(text), self.max_text_length)):
+        for i in range(min(len(text), self.max_text_length)):
             ch = text[i]
             if ch != ' ' or pre != ' ':
                 self.text += ch
@@ -152,7 +150,7 @@ class Detector(object):
         self.langprob = [0.0] * len(self.langlist)
 
         self.random.seed(self.seed)
-        for t in xrange(self.n_trial):
+        for t in range(self.n_trial):
             prob = self._init_probability()
             alpha = self.alpha + self.random.gauss(0.0, 1.0) * self.ALPHA_WIDTH
 
@@ -165,7 +163,7 @@ class Detector(object):
                     if self.verbose:
                         six.print_('>', self._sort_probability(prob))
                 i += 1
-            for j in xrange(len(self.langprob)):
+            for j in range(len(self.langprob)):
                 self.langprob[j] += prob[j] / self.n_trial
             if self.verbose:
                 six.print_('==>', self._sort_probability(prob))
@@ -181,7 +179,7 @@ class Detector(object):
 
     def _extract_ngrams(self):
         '''Extract n-grams from target text.'''
-        RANGE = list(xrange(1, NGram.N_GRAM + 1))
+        RANGE = list(range(1, NGram.N_GRAM + 1))
 
         result = []
         ngram = NGram()
@@ -208,13 +206,13 @@ class Detector(object):
             six.print_('%s(%s): %s' % (word, self._unicode_encode(word), self._word_prob_to_string(lang_prob_map)))
 
         weight = alpha / self.BASE_FREQ
-        for i in xrange(len(prob)):
+        for i in range(len(prob)):
             prob[i] *= weight + lang_prob_map[i]
         return True
 
     def _word_prob_to_string(self, prob):
         result = ''
-        for j in xrange(len(prob)):
+        for j in range(len(prob)):
             p = prob[j]
             if p >= 0.00001:
                 result += ' %s:%.5f' % (self.langlist[j], p)
@@ -224,7 +222,7 @@ class Detector(object):
         '''Normalize probabilities and check convergence by the maximun probability.
         '''
         maxp, sump = 0.0, sum(prob)
-        for i in xrange(len(prob)):
+        for i in range(len(prob)):
             p = prob[i] / sump
             if maxp < p:
                 maxp = p

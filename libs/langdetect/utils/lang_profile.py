@@ -1,8 +1,7 @@
 from collections import defaultdict
 import re
 
-import six
-from six.moves import xrange
+import libs.six as six
 
 from .ngram import NGram
 
@@ -66,5 +65,5 @@ class LangProfile(object):
         gram = NGram()
         for ch in text:
             gram.add_char(ch)
-            for n in xrange(1, NGram.N_GRAM+1):
+            for n in range(1, NGram.N_GRAM+1):
                 self.add(gram.get(n))

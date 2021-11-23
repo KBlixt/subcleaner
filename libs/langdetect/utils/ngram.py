@@ -1,6 +1,6 @@
 import re
 
-import six
+import libs.six as six
 
 from . import messages
 from .unicode_block import (
