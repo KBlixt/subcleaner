@@ -18,7 +18,7 @@ class Cleaner(object):
         for block in blocks:
             if len(block.content.strip(" -_.")) == 0:
                 block.regex_matches = 3
-                break
+                continue
 
             for regex in self.purge_regex_list:
                 result = findall(regex, block.content.replace("\n", " ").strip(), flags=IGNORECASE | UNICODE)
@@ -30,6 +30,7 @@ class Cleaner(object):
                 result = findall(regex, block.content.replace("\n", " ").strip(), flags=IGNORECASE | UNICODE)
                 if result is not None and len(result) > 0:
                     block.regex_matches += len(result)
+
             if block.regex_matches == 0:
                 block.regex_matches = -1
 
