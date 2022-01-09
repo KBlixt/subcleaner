@@ -24,7 +24,7 @@ class SubBlock(object):
 
     @staticmethod
     def _convert_to_timedelta(time) -> timedelta:
-        time = time.replace(",", ".")
+        time = time.replace(",", ".").replace(" ", "")
         split = time.split(":")
 
         return timedelta(hours=float(split[0]),
