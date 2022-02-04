@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from configparser import DuplicateOptionError
-from subcleaner.main import main
+from libs.subcleaner import main
 from pathlib import Path
 
 if __name__ == '__main__':
     try:
-        main(Path(__file__).absolute().parent)
+        main.main(Path(__file__).absolute().parent)
         print("subcleaner completed successfully.")
         exit()
     except KeyboardInterrupt:
