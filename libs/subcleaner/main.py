@@ -7,10 +7,10 @@ from .cleaner import Cleaner
 from .subtitle import Subtitle
 from datetime import datetime
 
-
 cleaner: Cleaner = Cleaner()
-single_subtitle_file: Path
-library_dir: Path
+relative_base: Path = Path.cwd()
+subtitles: list
+libraries: list
 destroy_list: list
 log_dir: Path
 language: str
@@ -24,14 +24,16 @@ def main(package_dir: Path):
     parse_config(package_dir)
     parse_args()
 
-    if single_subtitle_file is not None:
-        clean_file(single_subtitle_file)
+    if len(subtitles) != 0:
+        for file in subtitles:
+            clean_file(file)
 
     if destroy_list is not None:
         return
 
-    if library_dir is not None:
-        clean_directory(library_dir)
+    if len(libraries) != 0:
+        for library in libraries:
+            clean_directory(library)
 
 
 def clean_file(subtitle_file: Path) -> None:
@@ -88,12 +90,12 @@ def clean_directory(directory: Path) -> None:
 
 def parse_args() -> None:
     parser = ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
-                                        "Can also check so that the language match language-label. "
+                                        "Can also check that the subtitle language match the file name language code. "
                                         "Edit the subcleaner.conf file to change regex filter and "
                                         "where to store log.")
 
-    parser.add_argument("subtitle", metavar="SUB", type=Path, default=None, nargs="?",
-                        help="Path to subtitle to run script against. "
+    parser.add_argument("subtitle", metavar="SUB", type=Path, default=list(), nargs="*",
+                        help="Path to subtitles to run script against. "
                              "Script currently only compatible with simple .srt files.")
 
     parser.add_argument("--language", "-l", metavar="LANG", type=str, dest="language", default=None,
@@ -101,14 +103,14 @@ def parse_args() -> None:
                              "check that the language of the content matches LANG and report results to log. "
                              "code may contain :forced or other \"LANG:<tag>\" but these tags will be ignored")
 
-    parser.add_argument("--library", "-r", metavar="LIB", type=Path, dest="library", default=None,
+    parser.add_argument("--library", "-r", metavar="LIB", type=Path, dest="library", default=list(), nargs="*",
                         help="Run the script also on any subtitle found recursively under directory LIB. "
                              "If LANG is specified it will only run it on subtitles that have a "
-                             "language label matching the LANG code.")
+                             "language label matching LANG.")
 
     parser.add_argument("--destroy", "-d", type=int, nargs="+", default=None,
                         help="index of blocks to remove from SUB, this option is not compatible with the "
-                             "library option. When this option is passed the script will manually mark the "
+                             "library option. When this option is passed the script will mark the "
                              "specified blocks as ads and then run normally. "
                              "Example to destroy block 4 and 78: -d 4 78")
 
@@ -125,59 +127,38 @@ def parse_args() -> None:
 
     # check usage:
 
-    if args.subtitle is None and args.library is None:
+    if len(args.subtitle) == 0 and len(args.subtitle) == 0:
         parser.print_help()
         exit()
 
-    global library_dir
-    library_dir = args.library
-    if library_dir is not None:
-        if not library_dir.is_absolute():
-            library_dir = Path.cwd().joinpath(library_dir)
-        glob_library_dir = glob(str(library_dir))
-        if len(glob_library_dir) == 1:
-            library_dir = Path(glob_library_dir[0])
+    global libraries
+    libraries = list()
+    for library in args.library:
+        if not library.is_absolute():
+            library = relative_base.joinpath(library)
 
-        if not library_dir.is_dir():
-            print("'" + str(args.library) + "' is not a path to a single directory.")
-            print("--help for more information.")
-            exit()
+        if not library.is_dir():
+            for item in glob(str(library)):
+                item = Path(item)
+                if item.is_dir():
+                    libraries.append(item)
+            continue
+        libraries.append(library)
 
-    global single_subtitle_file
-    single_subtitle_file = args.subtitle
-    if single_subtitle_file is not None:
+    global subtitles
+    subtitles = list()
 
-        if not single_subtitle_file.is_absolute():
-            single_subtitle_file = Path.cwd().joinpath(single_subtitle_file)
+    for file in args.subtitle:
+        if not file.is_absolute():
+            file = relative_base.joinpath(file)
 
-        if not (single_subtitle_file.is_file() and single_subtitle_file.name[-4:] == ".srt"):
-            dir_list = glob(str(single_subtitle_file.parent))
-            if len(dir_list) != 1:
-                print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
-                print("--help for more information.")
-                exit()
-            dir_path = Path(dir_list[0])
-
-            name_list = list()
-            patten = escape(single_subtitle_file.name) \
-                .replace("\\*", ".*").replace("\\?", "?").replace("\\[", "[").replace("\\]", "]").replace("[!", "[^")
-
-            for file in dir_path.iterdir():
-                if match(patten, file.name, flags=UNICODE):
-                    name_list.append(file.name)
-
-            if len(name_list) != 1:
-                print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
-                print("--help for more information.")
-                exit()
-            name = name_list[0]
-
-            single_subtitle_file = dir_path.joinpath(name)
-
-            if not (single_subtitle_file.is_file() and single_subtitle_file.name[-4:] == ".srt"):
-                print("'" + str(args.subtitle) + "' is not a path to a single srt file.")
-                print("--help for more information.")
-                exit()
+        if not (file.is_file() and file.name[-4:] == ".srt"):
+            for item in glob(str(file)):
+                item = Path(item)
+                if item.is_file() and item.name[-4:] == ".srt":
+                    subtitles.append(item)
+            continue
+        subtitles.append(file)
 
     global language
     if args.language is not None:
@@ -187,7 +168,7 @@ def parse_args() -> None:
             print("--help for more information.")
             exit()
     else:
-        language = None
+        language = "unknown"
 
     global silent
     silent = args.silent
@@ -197,8 +178,8 @@ def parse_args() -> None:
     dry_run = args.dry_run
     global destroy_list
     destroy_list = args.destroy
-    if destroy_list is not None and single_subtitle_file is None:
-        print("option --destroy require a subtitle file to be specified.")
+    if destroy_list is not None and len(subtitles) != 1:
+        print("option --destroy require one and only one specified subtitle file.")
         print("see --help for more info.")
         exit()
 
@@ -207,7 +188,7 @@ def parse_config(package_dir: Path) -> None:
     config_file: Path = package_dir.joinpath("subcleaner.conf")
 
     if not config_file.is_file():
-        config_file.write_text(package_dir.joinpath("default-config", "subcleaner.conf").read_text())
+        config_file.write_text(package_dir.joinpath("default_config", "subcleaner.conf").read_text())
 
     cfg = ConfigParser()
     cfg.read(str(config_file))
