@@ -165,7 +165,6 @@ def parse_args() -> None:
     subtitles = list()
 
     for file_str in args.subtitle:
-        print(file_str)
         file: Path = Path(file_str)
         if not file.is_absolute():
             if file_str[0] == ".":
@@ -179,6 +178,7 @@ def parse_args() -> None:
                 if item.is_file() and item.name[-4:] == ".srt":
                     subtitles.append(item)
             continue
+        print(str(file))
         subtitles.append(file)
 
     global language
