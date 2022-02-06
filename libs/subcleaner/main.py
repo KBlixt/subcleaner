@@ -146,8 +146,12 @@ def parse_args() -> None:
     global libraries
     libraries = list()
     for library in args.library:
+        library: Path
         if not library.is_absolute():
-            library = relative_base.joinpath(library)
+            if library.parts[0] == ".":
+                library = Path.cwd().joinpath("/".join(library.parts[1:]))
+            else:
+                library = relative_base.joinpath(library)
 
         if not library.is_dir():
             for item in glob(str(library)):
