@@ -1,5 +1,4 @@
 from glob import glob
-from re import match, escape, UNICODE
 from pathlib import Path
 from argparse import ArgumentParser
 from configparser import ConfigParser
@@ -7,21 +6,27 @@ from .cleaner import Cleaner
 from .subtitle import Subtitle
 from datetime import datetime
 
-cleaner: Cleaner = Cleaner()
-relative_base: Path = Path.cwd()
+cleaner: Cleaner
+relative_base: Path
+package_dir: Path
 subtitles: list
 libraries: list
 destroy_list: list
 log_dir: Path
 language: str
+default_language: str
 dry_run: bool
 silent: bool
 no_log: bool
+regex_defaults: bool
+fix_overlaps: bool
 
 
-def main(package_dir: Path):
+def main(package_dir_from: Path):
+    global package_dir
+    package_dir = package_dir_from
 
-    parse_config(package_dir)
+    parse_config()
     parse_args()
 
     if len(subtitles) != 0:
@@ -37,16 +42,23 @@ def main(package_dir: Path):
 
 
 def clean_file(subtitle_file: Path) -> None:
+
     try:
-        subtitle = Subtitle(subtitle_file, destroy_list)
+        subtitle = Subtitle(subtitle_file, language, destroy_list)
     except UnicodeDecodeError as e:
         print("subcleaner was unable to decode file: \"" + str(subtitle_file) + "\n\" reason: \"" + e.reason + "\"")
         return
 
+    if not language:
+        if default_language:
+            subtitle.language = default_language
+        else:
+            subtitle.determine_language()
+
     cleaner.run_regex(subtitle)
     cleaner.find_ads(subtitle)
     cleaner.remove_ads(subtitle)
-    cleaner.fix_overlap(subtitle)
+    if fix_overlaps: cleaner.fix_overlap(subtitle)
 
     if len(subtitle.blocks) == 0:
         print("Exiting, There might be an issue with the regex, "
@@ -54,7 +66,7 @@ def clean_file(subtitle_file: Path) -> None:
               "Nothing was changed.")
         exit()
 
-    if not silent or not no_log:
+    if not (silent and no_log):
         out = generate_out(subtitle_file, subtitle)
         if not silent:
             print(out)
@@ -184,55 +196,67 @@ def parse_args() -> None:
         exit()
 
 
-def parse_config(package_dir: Path) -> None:
+def parse_config() -> None:
     config_file: Path = package_dir.joinpath("subcleaner.conf")
 
     if not config_file.is_file():
         config_file.write_text(package_dir.joinpath("default_config", "subcleaner.conf").read_text())
 
     cfg = ConfigParser()
-    cfg.read(str(config_file))
+    cfg.read(str(config_file), encoding="UTF-8")
+
+    global regex_defaults
+    regex_defaults = cfg['SETTINGS'].getboolean("use_defaults", True)
+
+    global cleaner
+    cleaner = Cleaner(package_dir.joinpath("regex"), regex_defaults)
+
     sections = cfg.sections()
 
     if "REGEX" in sections and "PURGE_REGEX" not in sections:
         # for backwards-compatibility:
-        for regex in list(cfg.items("REGEX")):
-            if len(regex[1]) != 0:
-                cleaner.purge_regex_list.append(regex[1])
+        cfg.add_section("PURGE_REGEX")
+        for key, value in cfg.items("REGEX"):
+            cfg.set("PURGE_REGEX", key, value)
+        cfg.remove_section("REGEX")
+
+    if cfg.has_section("PURGE_REGEX") or cfg.has_section("WARNING_REGEX"):
         print("Config file is out of date. Converting the config file to follow latest config-layout will enable "
               "more granular ad-detection and warnings.")
-    else:
-        for regex in list(cfg.items("PURGE_REGEX")):
-            if len(regex[1]) != 0:
-                cleaner.purge_regex_list.append(regex[1])
-
-        for regex in list(cfg.items("WARNING_REGEX")):
-            if len(regex[1]) != 0:
-                cleaner.warning_regex_list.append(regex[1])
+        cleaner.exclusive_configs.append(cfg)
 
     global log_dir
-    try:
-        log_dir = Path(cfg["SETTINGS"].get("log_dir", "log"))
-    except KeyError:
-        log_dir = Path("log")
+    log_dir = Path(cfg["SETTINGS"].get("log_dir", "log/"))
     if not log_dir.is_absolute():
         log_dir = package_dir.joinpath(log_dir)
-
     try:
         log_dir.mkdir()
     except FileExistsError:
         if log_dir.is_file():
             print("WARN: configured log directory is a file. Logging disabled.")
             log_dir = None
+            global no_log
+            no_log = True
+
+    global relative_base
+    relative_base = Path(cfg['SETTINGS'].get("relative_path_base", "."))
+
+    global fix_overlaps
+    fix_overlaps = cfg['SETTINGS'].getboolean("fix_overlaps", True)
+
+    global default_language
+    default_language = cfg['SETTINGS'].get("default_language", "")
+    if any(default_language == test for test in ["blank", "Blank", ""]):
+        default_language = None
 
 
 def write_file(file_path: Path, content: str) -> None:
-    with file_path.open("w") as file:
+    with file_path.open("w", encoding="UTF-8") as file:
         file.write(content)
 
 
 def append_file(file_path: Path, content: str) -> None:
-    with file_path.open("a") as file:
+    with file_path.open("a", encoding="UTF-8") as file:
         file.write(content)
 
 

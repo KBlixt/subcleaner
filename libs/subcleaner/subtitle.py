@@ -1,5 +1,5 @@
 from .sub_block import SubBlock
-from libs.langdetect import detect_langs
+from libs import langdetect
 from pathlib import Path
 
 
@@ -7,14 +7,22 @@ class Subtitle(object):
     blocks: list
     ad_blocks: list
     warning_blocks: list
+    language: str
+    file: Path
 
-    def __init__(self, subtitle_file: Path, destroy_list: list):
+    def __init__(self, subtitle_file: Path, language: str, destroy_list: list):
         self.blocks: list = list()
         self.ad_blocks = []
         self.warning_blocks = []
+        self.language = language
+        self.file = subtitle_file
 
-        with subtitle_file.open("r") as file:
-            self._parse(file.read())
+        try:
+            with subtitle_file.open("r", encoding="utf-8") as file:
+                self._parse_file(file.read())
+        except UnicodeDecodeError:
+            with subtitle_file.open("r") as file:
+                self._parse_file(file.read())
 
         if destroy_list is not None:
             for index in destroy_list:
@@ -34,10 +42,10 @@ class Subtitle(object):
         sub_content: str = ""
         for block in self.blocks:
             sub_content += block.content
-        detected_language = detect_langs(sub_content)[0]
+        detected_language = langdetect.detect_langs(sub_content)[0]
         return detected_language.lang == language and detected_language.prob > 0.8
 
-    def _parse(self, file_content: str) -> None:
+    def _parse_file(self, file_content: str) -> None:
         current_index = 1
         block = SubBlock(current_index)
         for line in file_content.split("\n"):
@@ -68,3 +76,16 @@ class Subtitle(object):
             sub_file_content += (str(self.blocks[i]))
             sub_file_content += "\n"
         return sub_file_content[:-1]
+
+    def determine_language(self):
+        if len(self.file.name.split(".")) > 2:
+            self.language = self.file.name.split(".")[1]
+        else:
+            sub_content: str = ""
+            for block in self.blocks:
+                sub_content += block.content
+            detected_language = langdetect.detect_langs(sub_content)[0]
+            if detected_language.prob > 0.8:
+                self.language = detected_language.lang
+            else:
+                self.language = "unknown"
