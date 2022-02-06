@@ -16,7 +16,6 @@ class Cleaner(object):
     def __init__(self, regex_dir: Path, use_default_regex: bool):
         self.exclusive_configs = list()
         self._build_regex(regex_dir, use_default_regex)
-        print("hello")
 
     def run_regex(self, subtitle: Subtitle) -> None:
         blocks = subtitle.blocks
