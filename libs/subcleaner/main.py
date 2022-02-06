@@ -165,6 +165,7 @@ def parse_args() -> None:
     subtitles = list()
 
     for file in args.subtitle:
+        print(str(file))
         if not file.is_absolute():
             if file.parts[0] == ".":
                 file = Path.cwd().joinpath("/".join(file.parts[1:]))
