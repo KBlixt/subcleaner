@@ -53,7 +53,7 @@ class Cleaner(object):
                         break
 
     @staticmethod
-    def _block_regex(block: SubBlock, regex_list: list[str], punishment: int) -> None:
+    def _block_regex(block: SubBlock, regex_list: list, punishment: int) -> None:
         clean_content: str = block.content.replace("\n", " ").strip()
         for regex in regex_list:
             result = findall(regex, clean_content, flags=IGNORECASE | UNICODE)
