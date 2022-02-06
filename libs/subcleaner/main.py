@@ -139,7 +139,7 @@ def parse_args() -> None:
 
     # check usage:
 
-    if len(args.subtitle) == 0 and len(args.subtitle) == 0:
+    if len(args.subtitle) == 0 and len(args.library) == 0:
         parser.print_help()
         exit()
 
