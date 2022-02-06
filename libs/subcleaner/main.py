@@ -168,7 +168,7 @@ def parse_args() -> None:
         file: Path = Path(file_str)
         if not file.is_absolute():
             if file_str[0] == ".":
-                file = Path.cwd().joinpath("/".join(file.parts[1:]))
+                file = Path.cwd().joinpath("/".join(file.parts))
             else:
                 file = relative_base.joinpath(file)
 
@@ -247,7 +247,11 @@ def parse_config() -> None:
             no_log = True
 
     global relative_base
-    relative_base = Path(cfg['SETTINGS'].get("relative_path_base", "."))
+    temp: str = cfg['SETTINGS'].get("relative_path_base", "")
+    if temp == "" or temp == ".":
+        relative_base = Path.cwd()
+    else:
+        relative_base = Path(temp)
 
     global fix_overlaps
     fix_overlaps = cfg['SETTINGS'].getboolean("fix_overlaps", True)
