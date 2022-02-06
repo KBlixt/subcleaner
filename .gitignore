@@ -281,3 +281,4 @@ $RECYCLE.BIN/
 /.idea
 /subcleaner.conf
 /log
+/regex/*
