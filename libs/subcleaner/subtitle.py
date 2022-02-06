@@ -38,12 +38,12 @@ class Subtitle(object):
             except ValueError:
                 pass
 
-    def check_language(self, language) -> bool:
+    def check_language(self) -> bool:
         sub_content: str = ""
         for block in self.blocks:
             sub_content += block.content
         detected_language = langdetect.detect_langs(sub_content)[0]
-        return detected_language.lang == language and detected_language.prob > 0.8
+        return detected_language.lang == self.language and detected_language.prob > 0.8
 
     def _parse_file(self, file_content: str) -> None:
         current_index = 1

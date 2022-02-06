@@ -180,7 +180,7 @@ def parse_args() -> None:
             print("--help for more information.")
             exit()
     else:
-        language = "unknown"
+        language = None
 
     global silent
     silent = args.silent
@@ -269,9 +269,10 @@ def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
     if dry_run:
         report += "    [INFO]: Nothing will be altered, (Dry-run).\n"
 
+    # todo: what do do about this?:
     if language is None:
         report += "    [INFO]: Didn't run language detection.\n"
-    elif subtitle.check_language(language):
+    elif subtitle.check_language():
         report += "    [INFO]: Subtitle language match file label. \n"
     else:
         report += "    [WARNING]: Subtitle language does not match file label.\n"
