@@ -148,7 +148,8 @@ class Cleaner(object):
 
     def _add_inclusive_config(self, parser: ConfigParser) -> None:
         for language in parser["META"].get("language_codes", "").replace(" ", "").split(","):
-            if language == "": continue
+            if language == "":
+                continue
             self.purge_regex.update({language: []})
             self.warning_regex.update({language: []})
 

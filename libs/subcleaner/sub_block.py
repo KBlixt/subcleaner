@@ -19,7 +19,7 @@ class SubBlock(object):
     def set_start_time(self, time: str) -> None:
         self.start_time = self._convert_to_timedelta(time)
 
-    def set_stop_time(self, time):
+    def set_stop_time(self, time) -> None:
         self.stop_time = self._convert_to_timedelta(time)
 
     @staticmethod

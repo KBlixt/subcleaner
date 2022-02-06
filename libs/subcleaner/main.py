@@ -58,7 +58,8 @@ def clean_file(subtitle_file: Path) -> None:
     cleaner.run_regex(subtitle)
     cleaner.find_ads(subtitle)
     cleaner.remove_ads(subtitle)
-    if fix_overlaps: cleaner.fix_overlap(subtitle)
+    if fix_overlaps:
+        cleaner.fix_overlap(subtitle)
 
     if len(subtitle.blocks) == 0:
         print("Exiting, There might be an issue with the regex, "
@@ -281,7 +282,6 @@ def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
     if dry_run:
         report += "    [INFO]: Nothing will be altered, (Dry-run).\n"
 
-    # todo: what do do about this?:
     if language is None:
         report += "    [INFO]: Didn't run language detection.\n"
     elif subtitle.check_language():
@@ -300,7 +300,8 @@ def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
         report += "    [INFO]: Removed 0 subtitle blocks.\n"
 
     if len(subtitle.warning_blocks) > 0:
-        report += "    [WARNING]: Potential ads in " + str(len(subtitle.warning_blocks)) + " subtitle blocks, please verify:\n"
+        report += "    [WARNING]: Potential ads in " + \
+                  str(len(subtitle.warning_blocks)) + " subtitle blocks, please verify:\n"
         report += "               [---------Warning Blocks----------]"
         for block in subtitle.warning_blocks:
             report += "\n               " + str(block.index) + "\n               "
