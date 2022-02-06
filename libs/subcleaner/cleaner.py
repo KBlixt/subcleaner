@@ -9,9 +9,9 @@ from datetime import timedelta
 
 class Cleaner(object):
 
-    purge_regex: dict[str, list[str]]
-    warning_regex: dict[str, list[str]]
-    exclusive_configs: list[ConfigParser]
+    purge_regex: dict
+    warning_regex: dict
+    exclusive_configs: list
 
     def __init__(self, regex_dir: Path, use_default_regex: bool):
         self.exclusive_configs = list()
