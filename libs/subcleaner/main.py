@@ -166,7 +166,10 @@ def parse_args() -> None:
 
     for file in args.subtitle:
         if not file.is_absolute():
-            file = relative_base.joinpath(file)
+            if file.parts[0] == ".":
+                file = Path.cwd().joinpath("/".join(file.parts[1:]))
+            else:
+                file = relative_base.joinpath(file)
 
         if not (file.is_file() and file.name[-4:] == ".srt"):
             for item in glob(str(file)):
