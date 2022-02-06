@@ -106,7 +106,7 @@ def parse_args() -> None:
                                         "Edit the subcleaner.conf file to change regex filter and "
                                         "where to store log.")
 
-    parser.add_argument("subtitle", metavar="SUB", type=Path, default=list(), nargs="*",
+    parser.add_argument("subtitle", metavar="SUB", type=str, default=list(), nargs="*",
                         help="Path to subtitles to run script against. "
                              "Script currently only compatible with simple .srt files.")
 
@@ -115,7 +115,7 @@ def parse_args() -> None:
                              "check that the language of the content matches LANG and report results to log. "
                              "code may contain :forced or other \"LANG:<tag>\" but these tags will be ignored")
 
-    parser.add_argument("--library", "-r", metavar="LIB", type=Path, dest="library", default=list(), nargs="*",
+    parser.add_argument("--library", "-r", metavar="LIB", type=str, dest="library", default=list(), nargs="*",
                         help="Run the script also on any subtitle found recursively under directory LIB. "
                              "If LANG is specified it will only run it on subtitles that have a "
                              "language label matching LANG.")
@@ -145,11 +145,11 @@ def parse_args() -> None:
 
     global libraries
     libraries = list()
-    for library in args.library:
-        library: Path
+    for library_str in args.library:
+        library: Path = Path(library_str)
         if not library.is_absolute():
-            if library.parts[0] == ".":
-                library = Path.cwd().joinpath("/".join(library.parts[1:]))
+            if library_str[0] == ".":
+                library = Path.cwd().joinpath("/".join(library.parts))
             else:
                 library = relative_base.joinpath(library)
 
@@ -164,10 +164,11 @@ def parse_args() -> None:
     global subtitles
     subtitles = list()
 
-    for file in args.subtitle:
-        print(str(file))
+    for file_str in args.subtitle:
+        print(file_str)
+        file: Path = Path(file_str)
         if not file.is_absolute():
-            if file.parts[0] == ".":
+            if file_str[0] == ".":
                 file = Path.cwd().joinpath("/".join(file.parts[1:]))
             else:
                 file = relative_base.joinpath(file)
