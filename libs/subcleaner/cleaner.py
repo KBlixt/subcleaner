@@ -8,7 +8,6 @@ from datetime import timedelta
 
 
 class Cleaner(object):
-
     purge_regex: dict
     warning_regex: dict
     exclusive_configs: list
@@ -36,17 +35,18 @@ class Cleaner(object):
 
         if len(blocks) >= 10:
             for index in range(0, len(subtitle.blocks)):
-                if index < 3 or index > len(subtitle.blocks)-4:
+
+                if index < 3 or index > len(subtitle.blocks) - 4:
                     subtitle.blocks[index].regex_matches += 1
                     continue
-                for block in subtitle.blocks[max(0, index-1): min(index+2, len(subtitle.blocks))]:
+                for block in subtitle.blocks[max(0, index - 1): min(index + 2, len(subtitle.blocks))]:
                     if block.regex_matches >= 2 and index != block.index - 1:
                         subtitle.blocks[index].regex_matches += 1
                         break
 
         if len(blocks) >= 100:
             for index in range(0, len(subtitle.blocks)):
-                for block in subtitle.blocks[max(0, index-15): min(index+16, len(subtitle.blocks))]:
+                for block in subtitle.blocks[max(0, index - 15): min(index + 16, len(subtitle.blocks))]:
                     if block.regex_matches >= 3:
                         subtitle.blocks[index].regex_matches += 1
                         break
@@ -57,8 +57,7 @@ class Cleaner(object):
         for regex in regex_list:
             result = findall(regex, clean_content, flags=IGNORECASE | UNICODE)
             if result is not None and len(result) > 0:
-                block.regex_matches += punishment
-                return
+                block.regex_matches += punishment * len(result)
 
     @staticmethod
     def remove_ads(subtitle: Subtitle):
@@ -66,7 +65,7 @@ class Cleaner(object):
             subtitle.remove_block(block)
         for index in range(len(subtitle.blocks)):
             block: SubBlock = subtitle.blocks[index]
-            block.index = index+1
+            block.index = index + 1
 
     @staticmethod
     def find_ads(subtitle: Subtitle) -> None:
@@ -81,14 +80,33 @@ class Cleaner(object):
                 subtitle.warning_blocks.append(block)
                 continue
 
-            # todo: improve this:
-            if index == 0 or index == len(subtitle.blocks)-1:
-                continue
-            pre_block: SubBlock = subtitle.blocks[index - 1]
-            post_block: SubBlock = subtitle.blocks[index + 1]
-            if (pre_block.regex_matches >= 3 or index == 0) and \
-                    (post_block.regex_matches >= 3 or index == len(subtitle.blocks) - 1):
-                if timedelta(seconds=-10) < (block.start_time - pre_block.stop_time) < timedelta(seconds=2.5):
+            pre_block: SubBlock = subtitle.blocks[max(index - 1, 0)]
+            post_block: SubBlock = subtitle.blocks[min(index + 1, len(subtitle.blocks)-1)]
+
+            if index == 0:
+                if post_block.regex_matches >= 3:
+                    if (post_block.start_time - block.stop_time) < timedelta(seconds=0.1):
+                        subtitle.ad_blocks.append(block)
+                        continue
+                    else:
+                        subtitle.warning_blocks.append(block)
+                        continue
+
+            elif index == len(subtitle.blocks) - 1:
+                if pre_block.regex_matches >= 3:
+                    if (block.start_time - pre_block.stop_time) < timedelta(seconds=0.1):
+                        subtitle.ad_blocks.append(block)
+                        continue
+                    else:
+                        subtitle.warning_blocks.append(block)
+                        continue
+
+            elif pre_block.regex_matches >= 3 and post_block.regex_matches >= 3:
+                if (post_block.start_time - block.stop_time) < timedelta(seconds=0.06) and \
+                        (block.start_time - pre_block.stop_time) < timedelta(seconds=0.06):
+                    subtitle.ad_blocks.append(block)
+                    continue
+                if block.regex_matches == 2:
                     subtitle.ad_blocks.append(block)
                     continue
                 else:
@@ -110,7 +128,7 @@ class Cleaner(object):
             if overlap.days >= 0 and overlap.microseconds > 3000:
                 content_ratio = len(block.content) / (len(block.content) + len(previous_block.content))
                 block.start_time += content_ratio * overlap
-                previous_block.stop_time += (content_ratio-1) * overlap
+                previous_block.stop_time += (content_ratio - 1) * overlap
             previous_block = block
         return
 
