@@ -3,7 +3,7 @@ from pathlib import Path
 
 from .subtitle import Subtitle
 from .sub_block import SubBlock
-from re import findall, IGNORECASE, UNICODE
+from re import findall, IGNORECASE, UNICODE, match
 from datetime import timedelta
 
 
@@ -19,6 +19,9 @@ class Cleaner(object):
     def run_regex(self, subtitle: Subtitle) -> None:
         blocks = subtitle.blocks
 
+        if subtitle.blocks[0].start_time < timedelta(seconds=2):
+            subtitle.blocks[0].regex_matches = 3
+
         for block in blocks:
             if len(block.content.strip(" -_.")) <= 1:
                 block.regex_matches = 3
@@ -32,6 +35,8 @@ class Cleaner(object):
 
             if block.regex_matches == 0:
                 block.regex_matches = -1
+            if match("^ *[^ ]+[A-ￜ]( [^ ]+[A-ￜ])? *$", block.content.replace("\n", " ")):
+                block.regex_matches += 1
 
         if len(blocks) >= 10:
             for index in range(0, len(subtitle.blocks)):
