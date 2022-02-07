@@ -183,7 +183,7 @@ def parse_args() -> None:
 
     global language
     if args.language is not None:
-        language = args.language.split(":")[0].replace("\"", "").lower()
+        language = args.language.split(":")[0].replace("\"", "").replace("'", "").lower()
         if len(language) != 2:
             print("'" + args.language + "' does not contain a valid 2-letter ISO-639 language code.")
             print("--help for more information.")

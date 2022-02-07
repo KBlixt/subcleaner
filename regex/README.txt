@@ -9,7 +9,7 @@ Since each config check its associated language codes individually multiple
 regex configs can run against the same subtitle. You can disable all default
 configs in the subcleaner.conf file.
 
-Regex configs need to have to .conf extension.
-Configs starting with a "." will be ignored.
+Regex configs need to have to a .conf extension.
+Configs starting with a "." will be also be ignored.
 
-Use one of the default configs as template to avoid unwanted results.
+Use one of the default configs as a template to avoid unwanted results.
