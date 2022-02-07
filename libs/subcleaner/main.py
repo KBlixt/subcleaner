@@ -101,9 +101,7 @@ def clean_directory(directory: Path) -> None:
 
 def parse_args() -> None:
     parser = ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
-                                        "Can also check that the subtitle language match the file name language code. "
-                                        "Edit the subcleaner.conf file to change regex filter and "
-                                        "where to store log.")
+                                        "Can also check that the subtitle language match the file name language code. ")
 
     parser.add_argument("subtitle", metavar="SUB", type=str, default=list(), nargs="*",
                         help="Path to subtitles to run script against. "
@@ -247,10 +245,11 @@ def parse_config() -> None:
 
     global relative_base
     temp: str = cfg['SETTINGS'].get("relative_path_base", "")
-    if temp == "" or temp == ".":
-        relative_base = Path.cwd()
-    else:
-        relative_base = Path(temp)
+    if temp == "":
+        temp = "."
+    relative_base = Path(temp)
+    if not relative_base.is_absolute():
+        relative_base = Path.cwd().joinpath(relative_base)
 
     global fix_overlaps
     fix_overlaps = cfg['SETTINGS'].getboolean("fix_overlaps", True)
