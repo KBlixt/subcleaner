@@ -35,8 +35,6 @@ class Cleaner(object):
 
             if block.regex_matches == 0:
                 block.regex_matches = -1
-            if match("^ *[^ ]+[A-ￜ]( [^ ]+[A-ￜ])? *$", block.content.replace("\n", " ")):
-                block.regex_matches += 1
 
         if len(blocks) >= 10:
             for index in range(0, len(subtitle.blocks)):
