@@ -3,7 +3,7 @@ from pathlib import Path
 
 from .subtitle import Subtitle
 from .sub_block import SubBlock
-from re import findall, IGNORECASE, UNICODE, match
+from re import findall, IGNORECASE, UNICODE
 from datetime import timedelta
 
 
@@ -88,7 +88,7 @@ class Cleaner(object):
 
             if index == 0:
                 if post_block.regex_matches >= 3:
-                    if (post_block.start_time - block.stop_time) < timedelta(seconds=0.1):
+                    if (post_block.start_time - block.stop_time) < timedelta(seconds=1):
                         subtitle.ad_blocks.append(block)
                         continue
                     else:
@@ -97,7 +97,7 @@ class Cleaner(object):
 
             elif index == len(subtitle.blocks) - 1:
                 if pre_block.regex_matches >= 3:
-                    if (block.start_time - pre_block.stop_time) < timedelta(seconds=0.1):
+                    if (block.start_time - pre_block.stop_time) < timedelta(seconds=1):
                         subtitle.ad_blocks.append(block)
                         continue
                     else:
@@ -105,8 +105,8 @@ class Cleaner(object):
                         continue
 
             elif pre_block.regex_matches >= 3 and post_block.regex_matches >= 3:
-                if (post_block.start_time - block.stop_time) < timedelta(seconds=0.06) and \
-                        (block.start_time - pre_block.stop_time) < timedelta(seconds=0.06):
+                if (post_block.start_time - block.stop_time) < timedelta(seconds=1) and \
+                        (block.start_time - pre_block.stop_time) < timedelta(seconds=1):
                     subtitle.ad_blocks.append(block)
                     continue
                 if block.regex_matches == 2:

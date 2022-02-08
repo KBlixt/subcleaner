@@ -90,7 +90,7 @@ def clean_directory(directory: Path) -> None:
                 if extensions[-1] != "srt":
                     continue
                 if language is not None:
-                    if extensions[1] == language:
+                    if any(language == extension for extension in extensions):
                         clean_file(file)
                         continue
                 else:
