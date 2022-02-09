@@ -39,7 +39,7 @@ English and Swedish. Read the config section further down for more information a
 customization.
 
 ### Windows:
-it should be the same method, although you'll have to figure out how to clone the project
+It should be the same method, although you'll have to figure out how to clone the project
 and install python3. 
 
 # Bazarr
