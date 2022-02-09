@@ -79,7 +79,7 @@ for ad detection.
 If you need help to set up custom profiles there is a README in the directory to 
 guide you.
 
-###If you make a useful regex profile for a non-default language, PLEASE let me know! 
+### If you make a useful regex profile for a non-default language, PLEASE let me know! 
 I'll review it and add it to the included default profiles. And it'll help out others that use 
 that language. :)
 
