@@ -38,6 +38,10 @@ the script comes with a default config and default regex profiles for
 English and Swedish. Read the config section further down for more information about 
 customization.
 
+### Windows:
+it should be the same method, although you'll have to figure out how to clone the project
+and install python3. 
+
 # Bazarr
 Unlock the scripts full potential by running it after downloading a subtitle from 
 [Bazarr](https://github.com/morpheus65535/bazarr). Enable custom post-processing and use
