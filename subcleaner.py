@@ -15,6 +15,7 @@ if __name__ == '__main__':
         print("subcleaner ran into an permission error. Permission denied to: \"" + e.filename + "\"")
         exit()
     except DuplicateOptionError as e:
-        print("subcleaner was unable to read config file because there are multiple keys with the same name: " 
+        print("subcleaner was unable to read config file \"" + e.args[2].name +
+              "\" because there are multiple keys with the same name:\n" 
               "Option '" + e.option + "' already exists in section '" + e.section + "'")
         exit()
