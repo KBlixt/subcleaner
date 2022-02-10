@@ -56,7 +56,7 @@ class Cleaner(object):
 
     @staticmethod
     def _block_regex(block: SubBlock, regex_list: list, punishment: int) -> None:
-        clean_content: str = block.content.replace("\n", " ").strip()
+        clean_content: str = " ".join(block.content.replace("-\n", "-").split())
         for regex in regex_list:
             result = findall(regex, clean_content, flags=IGNORECASE | UNICODE)
             if result is not None and len(result) > 0:
