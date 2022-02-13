@@ -282,3 +282,4 @@ $RECYCLE.BIN/
 /subcleaner.conf
 /log
 /regex/*
+/databases/
