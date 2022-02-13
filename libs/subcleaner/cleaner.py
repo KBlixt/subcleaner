@@ -184,7 +184,7 @@ class Cleaner(object):
 
     def _add_exclusive_configs(self) -> None:
         for parser in self.exclusive_configs:
-            excluded_languages = parser["META"].get("excluded_language_codes").replace(" ", "").split(",")
+            excluded_languages = parser["META"].get("excluded_language_codes", "").replace(" ", "").split(",")
             if len(excluded_languages) == 1 and excluded_languages[0] == "":
                 excluded_languages = []
 
