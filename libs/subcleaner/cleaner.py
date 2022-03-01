@@ -20,7 +20,7 @@ class Cleaner(object):
         blocks = subtitle.blocks
 
         if subtitle.blocks[0].start_time < timedelta(seconds=2):
-            subtitle.blocks[0].regex_matches = 3
+            subtitle.blocks[0].regex_matches = 1
 
         for block in blocks:
             if len(block.content.strip(" -_.")) <= 1:
