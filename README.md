@@ -86,6 +86,8 @@ guide you.
 ### If you make a useful regex profile for a non-default language, PLEASE let me know! 
 I'll review it and add it to the included default profiles. And it'll help out others that use 
 that language. :)
+__________________
+
 
 # Thank you :)
 Please, If you find any issues or have any questions feel free to 
