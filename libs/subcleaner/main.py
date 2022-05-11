@@ -300,10 +300,14 @@ def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
         report += "    [WARNING]: Potential ads in " + \
                   str(len(subtitle.warning_blocks)) + " subtitle blocks, please verify:\n"
         report += "               [---------Warning Blocks----------]"
+        d_command = "subcleaner '" + str(subtitle_file) + "' -d"
         for block in subtitle.warning_blocks:
+            d_command += " " + str(block.index)
             report += "\n               " + str(block.index) + "\n               "
             report += str(block).replace("\n", "\n               ")[:-15]
         report += "               [---------------------------------]\n"
-        report += "               To remove blocks use: subcleaner -d\n"
-    report += "[---------------------------------------------------------------------------------]"
+        report += "    [INFO] To remove all these blocks use: \n"
+        report += d_command + " \n"
+
+    report += "\n[---------------------------------------------------------------------------------]"
     return report

@@ -26,7 +26,8 @@ class Subtitle(object):
 
         if destroy_list is not None:
             for index in destroy_list:
-                self.blocks[index-1].regex_matches = 3
+                if index-1 < len(self.blocks):
+                    self.blocks[index-1].regex_matches = 3
 
     def add_block(self, block: SubBlock) -> None:
         self.blocks.append(block)
