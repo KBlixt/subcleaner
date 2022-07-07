@@ -21,7 +21,7 @@ class Subtitle(object):
             with subtitle_file.open("r", encoding="utf-8") as file:
                 self._parse_file(file.read())
         except UnicodeDecodeError:
-            with subtitle_file.open("r") as file:
+            with subtitle_file.open("r", encoding="cp1252") as file:
                 self._parse_file(file.read())
 
         if destroy_list is not None:
