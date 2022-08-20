@@ -3,7 +3,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 from configparser import ConfigParser
 from .cleaner import Cleaner
-from .subtitle import Subtitle
+from .subtitle import Subtitle, ParsingException
 from datetime import datetime
 
 cleaner: Cleaner
@@ -47,6 +47,17 @@ def clean_file(subtitle_file: Path) -> None:
         subtitle = Subtitle(subtitle_file, language, destroy_list)
     except UnicodeDecodeError as e:
         print("subcleaner was unable to decode file: \"" + str(subtitle_file) + "\n\" reason: \"" + e.reason + "\"")
+        return
+    except ParsingException as e:
+        e.subtitle_file = subtitle_file
+        out = "SUBTITLE: \"" + str(subtitle_file) + "\"\n"
+        out += f"    [ERROR] {e}\n"
+        out += "\n[---------------------------------------------------------------------------------]"
+
+        if not silent:
+            print(out)
+        if not no_log and log_dir is not None:
+            append_file(log_dir.joinpath("subcleaner.log"), generate_log(out))
         return
 
     if not language:

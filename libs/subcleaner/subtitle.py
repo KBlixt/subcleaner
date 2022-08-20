@@ -24,6 +24,7 @@ class Subtitle(object):
             with subtitle_file.open("r", encoding="cp1252") as file:
                 self._parse_file(file.read())
 
+
         if destroy_list is not None:
             for index in destroy_list:
                 if index-1 < len(self.blocks):
@@ -49,26 +50,29 @@ class Subtitle(object):
     def _parse_file(self, file_content: str) -> None:
         current_index = 1
         block = SubBlock(current_index)
-        for line in file_content.split("\n"):
-            if len(line) == 0:
+        try:
+            for line in file_content.split("\n"):
+                if len(line) == 0:
+                    if block.stop_time is not None:
+                        self.blocks.append(block)
+                        current_index += 1
+                        block = SubBlock(current_index)
+                    continue
+
+                if " --> " in line and block.stop_time is None:
+                    start_string = line.split(" --> ")[0].rstrip()[:12]
+                    block.set_start_time(start_string)
+
+                    stop_string = line.split(" --> ")[1].rstrip()[:12]
+                    block.set_stop_time(stop_string)
+                    continue
+
                 if block.stop_time is not None:
-                    self.blocks.append(block)
-                    current_index += 1
-                    block = SubBlock(current_index)
-                continue
-
-            if " --> " in line and block.stop_time is None:
-                start_string = line.split(" --> ")[0].rstrip()[:12]
-                block.set_start_time(start_string)
-
-                stop_string = line.split(" --> ")[1].rstrip()[:12]
-                block.set_stop_time(stop_string)
-                continue
-
+                    block.content = block.content + line + "\n"''
             if block.stop_time is not None:
-                block.content = block.content + line + "\n"''
-        if block.stop_time is not None:
-            self.blocks.append(block)
+                self.blocks.append(block)
+        except Exception as e:
+            raise ParsingException(f"srt file not correctly formatted at index {current_index}", current_index)
 
     def __repr__(self):
         sub_file_content = ""
@@ -90,3 +94,16 @@ class Subtitle(object):
                 self.language = detected_language.lang
             else:
                 self.language = "unknown"
+
+
+class ParsingException(Exception):
+    block_index: int
+    subtitle_file: str
+    message:str
+
+    def __init__(self, message, block_index):
+        self.message = message
+        self.block_index = block_index
+
+    def __str__(self) -> str:
+        return f"Parsing error at block {self.block_index} in file {self.subtitle_file}."
