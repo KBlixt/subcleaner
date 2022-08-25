@@ -1,69 +1,32 @@
-from datetime import timedelta
-from math import floor
+import dataclasses
+import datetime
+import util
+from libs.subcleaner.subtitle import ParsingException
 
 
+@dataclasses.dataclass()
 class SubBlock(object):
-    index: int
+    original_index: int
     content: str
-    start_time: timedelta
-    stop_time: timedelta
-    regex_matches: int
+    start_time: datetime.timedelta
+    end_time: datetime.timedelta
+    regex_matches = 0
 
-    def __init__(self, orig_index):
-        self.index = orig_index
-        self.regex_matches = 0
-        self.content = ""
-        self.start_time = None
-        self.stop_time = None
+    def __init__(self, block_string: str):
+        rows = block_string.split("\n")
 
-    def set_start_time(self, time: str) -> None:
-        self.start_time = self._convert_to_timedelta(time)
+        self.original_index = int(rows[0])
+        if len(rows) == 1:
+            raise ParsingException(self.original_index)
 
-    def set_stop_time(self, time) -> None:
-        self.stop_time = self._convert_to_timedelta(time)
+        times = rows[1].replace(" ", "").split("-->")
+        self.start_time = util.time_string_to_timedelta(times[0])
+        self.end_time = util.time_string_to_timedelta(times[1])
 
-    @staticmethod
-    def _convert_to_timedelta(time) -> timedelta:
-        time = time.replace(",", ".").replace(" ", "")
-        split = time.split(":")
+        if len(rows) > 2:
+            self.content = "\n".join(rows[2:])
 
-        return timedelta(hours=float(split[0]),
-                         minutes=float(split[1]),
-                         seconds=float(split[2]))
-
-    @staticmethod
-    def _convert_from_timedelta(time: timedelta) -> str:
-        time_left = time.total_seconds()
-
-        hours = floor(time_left / (60 * 60))
-        time_left = time_left - hours * (60 * 60)
-
-        minutes = floor(time_left / 60)
-        time_left = time_left - minutes * 60
-
-        seconds = floor(time_left)
-        time_left = time_left - seconds
-
-        mill = floor(time_left * 1000)
-
-        hours_str = str(hours)
-        minutes_str = str(minutes)
-        seconds_str = str(seconds)
-        mill_str = str(mill)
-
-        hours_str = "0" * (2 - len(hours_str)) + hours_str
-        minutes_str = "0" * (2 - len(minutes_str)) + minutes_str
-        seconds_str = "0" * (2 - len(seconds_str)) + seconds_str
-        mill_str = "0" * (3 - len(mill_str)) + mill_str
-
-        return hours_str + ":" + minutes_str + ":" + seconds_str + "," + mill_str
-
-    def __repr__(self) -> str:
-
-        string = (self._convert_from_timedelta(self.start_time) +
-                  " --> " +
-                  self._convert_from_timedelta(self.stop_time) +
-                  "\n")
-        string += self.content
+    def __str__(self) -> str:
+        string = f"{util.timedelta_to_time_string(self.start_time)} --> {util.timedelta_to_time_string(self.end_time)}\n" \
+                 f"{self.content}"
         return string
-
