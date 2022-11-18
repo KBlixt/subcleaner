@@ -73,9 +73,11 @@ def clean_file(subtitle_file: Path) -> None:
         cleaner.fix_overlap(subtitle)
 
     if len(subtitle.blocks) == 0:
-        print("Exiting, There might be an issue with the regex, "
-              "because everything in the subtitle would have gotten deleted."
-              "Nothing was changed.")
+        out = "SUBTITLE: \"" + str(subtitle_file) + "\"\n"
+        out += "    [ERROR]: Exiting, There might be an issue with the regex,\n"
+        out += "             because everything in the subtitle would have gotten deleted.\n"
+        out += "             Nothing was changed.\n"
+        print(out)
         exit()
 
     if not (silent and no_log):
