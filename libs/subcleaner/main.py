@@ -304,44 +304,44 @@ def generate_log(out_string: str) -> str:
 
 
 def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
-    report = ""
-    if not errors_only:
-        if minimal and not (len(subtitle.ad_blocks) > 0 or len(subtitle.warning_blocks) > 0):
-            return ""
-        
-        report += "SUBTITLE: \"" + str(subtitle_file) + "\"\n"
-        if dry_run:
-            report += "    [INFO]: Nothing will be altered, (Dry-run).\n"
+    if errors_only:
+        return ""
+    if minimal and not (len(subtitle.ad_blocks) > 0 or len(subtitle.warning_blocks) > 0):
+        return ""
+    
+    report = "SUBTITLE: \"" + str(subtitle_file) + "\"\n"
+    if dry_run:
+        report += "    [INFO]: Nothing will be altered, (Dry-run).\n"
 
-        if language is None:
-            report += "    [INFO]: Didn't run language detection.\n"
-        elif subtitle.check_language():
-            report += "    [INFO]: Subtitle language match file label. \n"
-        else:
-            report += "    [WARNING]: Subtitle language does not match file label.\n"
+    if language is None:
+        report += "    [INFO]: Didn't run language detection.\n"
+    elif subtitle.check_language():
+        report += "    [INFO]: Subtitle language match file label. \n"
+    else:
+        report += "    [WARNING]: Subtitle language does not match file label.\n"
 
-        if len(subtitle.ad_blocks) > 0:
-            report += "    [INFO]: Removed " + str(len(subtitle.ad_blocks)) + " subtitle blocks:\n"
-            report += "            [---------Removed Blocks----------]"
-            for block in subtitle.ad_blocks:
-                report += "\n            " + str(block.index) + "\n            "
-                report += str(block).replace("\n", "\n            ")[:-12]
-            report += "            [---------------------------------]\n"
-        else:
-            report += "    [INFO]: Removed 0 subtitle blocks.\n"
+    if len(subtitle.ad_blocks) > 0:
+        report += "    [INFO]: Removed " + str(len(subtitle.ad_blocks)) + " subtitle blocks:\n"
+        report += "            [---------Removed Blocks----------]"
+        for block in subtitle.ad_blocks:
+            report += "\n            " + str(block.index) + "\n            "
+            report += str(block).replace("\n", "\n            ")[:-12]
+        report += "            [---------------------------------]\n"
+    else:
+        report += "    [INFO]: Removed 0 subtitle blocks.\n"
 
-        if len(subtitle.warning_blocks) > 0:
-            report += "    [WARNING]: Potential ads in " + \
-                    str(len(subtitle.warning_blocks)) + " subtitle blocks, please verify:\n"
-            report += "               [---------Warning Blocks----------]"
-            d_command = "subcleaner '" + str(subtitle_file) + "' -d"
-            for block in subtitle.warning_blocks:
-                d_command += " " + str(block.index)
-                report += "\n               " + str(block.index) + "\n               "
-                report += str(block).replace("\n", "\n               ")[:-15]
-            report += "               [---------------------------------]\n"
-            report += "    [INFO] To remove all these blocks use: \n"
-            report += d_command + " \n"
+    if len(subtitle.warning_blocks) > 0:
+        report += "    [WARNING]: Potential ads in " + \
+                str(len(subtitle.warning_blocks)) + " subtitle blocks, please verify:\n"
+        report += "               [---------Warning Blocks----------]"
+        d_command = "subcleaner '" + str(subtitle_file) + "' -d"
+        for block in subtitle.warning_blocks:
+            d_command += " " + str(block.index)
+            report += "\n               " + str(block.index) + "\n               "
+            report += str(block).replace("\n", "\n               ")[:-15]
+        report += "               [---------------------------------]\n"
+        report += "    [INFO] To remove all these blocks use: \n"
+        report += d_command + " \n"
 
-        report += "\n[---------------------------------------------------------------------------------]"
+    report += "\n[---------------------------------------------------------------------------------]"
     return report
