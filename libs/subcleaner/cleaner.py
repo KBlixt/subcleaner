@@ -18,10 +18,14 @@ class Cleaner(object):
 
     def run_regex(self, subtitle: Subtitle) -> None:
         blocks = subtitle.blocks
-
-        if subtitle.blocks[0].start_time < timedelta(seconds=2):
-            subtitle.blocks[0].regex_matches = 1
-
+                
+        try:
+            if subtitle.blocks[0].start_time < timedelta(seconds=2):
+                subtitle.blocks[0].regex_matches = 1
+        except IndexError:
+            print("subcleaner was unable to decode file:")
+            return
+        
         for block in blocks:
             if len(block.content.strip(" -_.")) <= 1:
                 block.regex_matches = 3
