@@ -17,9 +17,12 @@ language: str
 default_language: str
 dry_run: bool
 silent: bool
+minimal: bool
+errors_only: bool
 no_log: bool
 regex_defaults: bool
 fix_overlaps: bool
+
 
 
 def main(package_dir_from: Path):
@@ -35,7 +38,7 @@ def main(package_dir_from: Path):
 
     if destroy_list is not None:
         return
-
+            
     if len(libraries) != 0:
         for library in libraries:
             clean_directory(library)
@@ -65,7 +68,7 @@ def clean_file(subtitle_file: Path) -> None:
             subtitle.language = default_language
         else:
             subtitle.determine_language()
-
+    
     cleaner.run_regex(subtitle)
     cleaner.find_ads(subtitle)
     cleaner.remove_ads(subtitle)
@@ -83,7 +86,8 @@ def clean_file(subtitle_file: Path) -> None:
     if not (silent and no_log):
         out = generate_out(subtitle_file, subtitle)
         if not silent:
-            print(out)
+            if len(out) > 0:
+                print(out)
 
         if not no_log and log_dir is not None:
             append_file(log_dir.joinpath("subcleaner.log"), generate_log(out))
@@ -142,6 +146,12 @@ def parse_args() -> None:
     parser.add_argument("--silent", "-s", action="store_true", dest="silent",
                         help="Silent: If flag is set then script don't print to console.")
 
+    parser.add_argument("--minimal", "-m", action="store_true", dest="minimal",
+                        help="Mininal: If flag is set then script will show less info.")
+    
+    parser.add_argument("--errors", "-e", action="store_true", dest="errors_only",
+                        help="Errors: If flag is set then script will show only the errors and will run in --dry-run mode.")
+    
     parser.add_argument("--no-log", action="store_true", dest="no_log",
                         help="No log: If flag is set then nothing is logged.")
 
@@ -206,6 +216,12 @@ def parse_args() -> None:
     no_log = args.no_log
     global dry_run
     dry_run = args.dry_run
+    global minimal
+    minimal = args.minimal
+    global errors_only
+    errors_only = args.errors_only
+    if errors_only:
+        dry_run = True
     global destroy_list
     destroy_list = args.destroy
     if destroy_list is not None and len(subtitles) != 1:
@@ -288,39 +304,44 @@ def generate_log(out_string: str) -> str:
 
 
 def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
-    report = "SUBTITLE: \"" + str(subtitle_file) + "\"\n"
-    if dry_run:
-        report += "    [INFO]: Nothing will be altered, (Dry-run).\n"
+    report = ""
+    if not errors_only:
+        if minimal and not (len(subtitle.ad_blocks) > 0 or len(subtitle.warning_blocks) > 0):
+            return ""
+        
+        report += "SUBTITLE: \"" + str(subtitle_file) + "\"\n"
+        if dry_run:
+            report += "    [INFO]: Nothing will be altered, (Dry-run).\n"
 
-    if language is None:
-        report += "    [INFO]: Didn't run language detection.\n"
-    elif subtitle.check_language():
-        report += "    [INFO]: Subtitle language match file label. \n"
-    else:
-        report += "    [WARNING]: Subtitle language does not match file label.\n"
+        if language is None:
+            report += "    [INFO]: Didn't run language detection.\n"
+        elif subtitle.check_language():
+            report += "    [INFO]: Subtitle language match file label. \n"
+        else:
+            report += "    [WARNING]: Subtitle language does not match file label.\n"
 
-    if len(subtitle.ad_blocks) > 0:
-        report += "    [INFO]: Removed " + str(len(subtitle.ad_blocks)) + " subtitle blocks:\n"
-        report += "            [---------Removed Blocks----------]"
-        for block in subtitle.ad_blocks:
-            report += "\n            " + str(block.index) + "\n            "
-            report += str(block).replace("\n", "\n            ")[:-12]
-        report += "            [---------------------------------]\n"
-    else:
-        report += "    [INFO]: Removed 0 subtitle blocks.\n"
+        if len(subtitle.ad_blocks) > 0:
+            report += "    [INFO]: Removed " + str(len(subtitle.ad_blocks)) + " subtitle blocks:\n"
+            report += "            [---------Removed Blocks----------]"
+            for block in subtitle.ad_blocks:
+                report += "\n            " + str(block.index) + "\n            "
+                report += str(block).replace("\n", "\n            ")[:-12]
+            report += "            [---------------------------------]\n"
+        else:
+            report += "    [INFO]: Removed 0 subtitle blocks.\n"
 
-    if len(subtitle.warning_blocks) > 0:
-        report += "    [WARNING]: Potential ads in " + \
-                  str(len(subtitle.warning_blocks)) + " subtitle blocks, please verify:\n"
-        report += "               [---------Warning Blocks----------]"
-        d_command = "subcleaner '" + str(subtitle_file) + "' -d"
-        for block in subtitle.warning_blocks:
-            d_command += " " + str(block.index)
-            report += "\n               " + str(block.index) + "\n               "
-            report += str(block).replace("\n", "\n               ")[:-15]
-        report += "               [---------------------------------]\n"
-        report += "    [INFO] To remove all these blocks use: \n"
-        report += d_command + " \n"
+        if len(subtitle.warning_blocks) > 0:
+            report += "    [WARNING]: Potential ads in " + \
+                    str(len(subtitle.warning_blocks)) + " subtitle blocks, please verify:\n"
+            report += "               [---------Warning Blocks----------]"
+            d_command = "subcleaner '" + str(subtitle_file) + "' -d"
+            for block in subtitle.warning_blocks:
+                d_command += " " + str(block.index)
+                report += "\n               " + str(block.index) + "\n               "
+                report += str(block).replace("\n", "\n               ")[:-15]
+            report += "               [---------------------------------]\n"
+            report += "    [INFO] To remove all these blocks use: \n"
+            report += d_command + " \n"
 
-    report += "\n[---------------------------------------------------------------------------------]"
+        report += "\n[---------------------------------------------------------------------------------]"
     return report
