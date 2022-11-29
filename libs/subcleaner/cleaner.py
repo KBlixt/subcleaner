@@ -19,9 +19,6 @@ class Cleaner(object):
     def run_regex(self, subtitle: Subtitle) -> None:
         blocks = subtitle.blocks
 
-        if subtitle.blocks[0].start_time < timedelta(seconds=2):
-            subtitle.blocks[0].regex_matches = 1
-
         for block in blocks:
             if len(block.content.strip(" -_.")) <= 1:
                 block.regex_matches = 3
@@ -53,6 +50,9 @@ class Cleaner(object):
                     if block.regex_matches >= 3:
                         subtitle.blocks[index].regex_matches += 1
                         break
+
+        if subtitle.blocks[0].start_time < timedelta(seconds=2) and subtitle.blocks[0].regex_matches < 2:
+            subtitle.blocks[0].regex_matches = 2
 
     @staticmethod
     def _block_regex(block: SubBlock, regex_list: list, punishment: int) -> None:
