@@ -28,7 +28,7 @@ class Subtitle(object):
             if block.content:
                 break
         else:
-            raise ParsingException(f"srt file does not contain anything")
+            raise ParsingException(f"srt file does not contain anything", 0)
 
         if destroy_list is not None:
             for index in destroy_list:
