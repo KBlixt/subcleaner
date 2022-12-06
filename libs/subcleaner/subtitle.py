@@ -23,7 +23,12 @@ class Subtitle(object):
         except UnicodeDecodeError:
             with subtitle_file.open("r", encoding="cp1252") as file:
                 self._parse_file(file.read())
-
+        
+        for block in self.blocks:
+            if block.content:
+                break
+        else:
+            raise ParsingException(f"srt file does not contain anything")
 
         if destroy_list is not None:
             for index in destroy_list:
