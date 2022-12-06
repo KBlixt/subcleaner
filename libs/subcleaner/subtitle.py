@@ -49,6 +49,8 @@ class Subtitle(object):
         sub_content: str = ""
         for block in self.blocks:
             sub_content += block.content
+        if len(sub_content) < 100:
+            return true
         detected_language = langdetect.detect_langs(sub_content)[0]
         return detected_language.lang == self.language and detected_language.prob > 0.8
 
@@ -94,6 +96,9 @@ class Subtitle(object):
             sub_content: str = ""
             for block in self.blocks:
                 sub_content += block.content
+            if len(sub_content) < 100:
+                self.language = "unknown
+                return
             detected_language = langdetect.detect_langs(sub_content)[0]
             if detected_language.prob > 0.8:
                 self.language = detected_language.lang
