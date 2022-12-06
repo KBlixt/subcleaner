@@ -12,8 +12,11 @@ def time_string_to_timedelta(time_string: str) -> datetime.timedelta:
 
 
 def timedelta_to_time_string(timedelta: datetime.timedelta) -> str:
-
-    time_string = str(timedelta)[:-3].replace(".", ",").zfill(12)
+    time_string = str(timedelta)
+    if "." in time_string:
+        time_string = time_string[: -3].replace(".", ",").zfill(12)
+    else:
+        time_string = f"{time_string},000".zfill(12)
     return time_string
 
 
@@ -28,3 +31,8 @@ def read_file(file: Path) -> str:
             file_content = opened_file.read()
 
     return file_content
+
+
+def is_language_code(language_code: str) -> bool:
+    return 2 <= len(language_code) <= 3
+

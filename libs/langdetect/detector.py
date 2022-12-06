@@ -17,7 +17,7 @@ class Detector(object):
     the detector provides the language detection results for target text via .detect() or .get_probabilities().
 
     .detect() method returns a single language name which has the highest probability.
-    .get_probabilities() methods returns a list of multiple languages and their probabilities.
+    .get_probabilities() methods returns a list of multiple _languages and their probabilities.
 
     The detector has some parameters for language detection.
     See set_alpha(double), .set_max_text_length(int) .set_prior_map(dict).

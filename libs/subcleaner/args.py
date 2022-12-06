@@ -1,9 +1,12 @@
+import logging
 from argparse import ArgumentParser
 from glob import glob
 from pathlib import Path
 from typing import Optional
 
-from libs.subcleaner import config
+from libs.subcleaner import config, languages
+
+logger = logging.getLogger("args")
 
 parser = ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
                                     "Can also check that the subtitle language match the file name language code. ")
@@ -15,7 +18,7 @@ parser.add_argument("subtitle", metavar="SUB", type=str, default=list(), nargs="
 
 language: Optional[str]
 parser.add_argument("--language", "-l", metavar="LANG", type=str, dest="language", default=None,
-                    help="2-letter ISO-639 language code. If this argument is set then the script will "
+                    help="ISO-639 language code. If this argument is set then the script will "
                          "check that the language of the content matches LANG and report results to log. "
                          "code may contain :forced or other \"LANG:<tag>\" but these tags will be ignored")
 
@@ -26,7 +29,7 @@ parser.add_argument("--library", "-r", metavar="LIB", type=str, dest="library", 
                          "language label matching LANG.")
 
 purge_list: list[int]
-parser.add_argument("--destroy", "-d", type=int, nargs="+", default=None,
+parser.add_argument("--destroy", "-d", type=int, nargs="+", default=list(),
                     help="original_index of blocks to remove from SUB, this option is not compatible with the "
                          "library option. When this option is passed the script will mark the "
                          "specified blocks as ads and then run normally. "
@@ -38,14 +41,13 @@ parser.add_argument("--dry-run", "-n", action="store_true", dest="dry_run",
 
 silent: bool
 parser.add_argument("--silent", "-s", action="store_true", dest="silent",
-                    help="Silent: If flag is set then script don't print to console.")
+                    help="Silent: If flag is set then script don't print info messages to console.")
 
 no_log: bool
 parser.add_argument("--no-log", action="store_true", dest="no_log",
                     help="No log: If flag is set then nothing is logged.")
 
 args = parser.parse_args()
-
 # check usage:
 
 if len(args.subtitle) == 0 and len(args.library) == 0:
@@ -61,11 +63,13 @@ for library_str in args.library:
         else:
             library = config.relative_base.joinpath(library)
 
-    library = library.resolve()
     for item in glob(str(library)):
-        item = Path(item)
+        item = Path(item).resolve()
         if item.is_dir():
-            libraries.append(item)
+            try:
+                libraries.append(item.relative_to(config.relative_base))
+            except ValueError:
+                libraries.append(item)
 
 subtitles = []
 for file_str in args.subtitle:
@@ -76,25 +80,25 @@ for file_str in args.subtitle:
         else:
             file = config.relative_base.joinpath(file)
 
-    file = file.resolve()
     for item in glob(str(file)):
-        item = Path(item)
+        item = Path(item).resolve()
         if item.is_file() and item.name[-4:] == ".srt":
-            subtitles.append(item)
+            try:
+                subtitles.append(item.relative_to(config.relative_base))
+            except ValueError:
+                subtitles.append(item)
 
 language = None
 if args.language:
-    language = args.language.split(":")[0].replace("\"", "").replace("'", "").lower()
-    if len(language) != 2:
-        print("'" + args.language + "' does not contain a valid 2-letter ISO-639 language code.")
-        print("--help for more information.")
-        exit()
+    language = args.language.replace("-", ":").split(":")[0].replace("\"", "").replace("'", "").lower()
+    if not languages.is_language(language):
+        logger.warning("'" + args.language + "' is not a valid ISO-639 language.\n--help for more information.")
+        exit(1)
 
 destroy_list = args.destroy
-if destroy_list and len(subtitles) != 1 and len(libraries) != 0:
-    print("option --destroy require one and only one specified subtitle file.")
-    print("see --help for more info.")
-    exit()
+if destroy_list and (len(subtitles) != 1 or len(libraries) != 0):
+    logger.warning("option --destroy require one and only one specified subtitle file.\nsee --help for more info.")
+    exit(1)
 
 silent = args.silent
 no_log = args.no_log
