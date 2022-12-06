@@ -50,7 +50,7 @@ class Subtitle(object):
         for block in self.blocks:
             sub_content += block.content
         if len(sub_content) < 100:
-            return true
+            return True
         detected_language = langdetect.detect_langs(sub_content)[0]
         return detected_language.lang == self.language and detected_language.prob > 0.8
 
