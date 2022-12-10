@@ -314,7 +314,7 @@ def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
         return ""
     if minimal and not (len(subtitle.ad_blocks) > 0 or len(subtitle.warning_blocks) > 0):
         return ""
-    if removed and not (len(subtitle.ad_blocks) > 0:
+    if removed and not (len(subtitle.ad_blocks) > 0):
         return ""
     
     report = "SUBTITLE: \"" + str(subtitle_file) + "\"\n"
