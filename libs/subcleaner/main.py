@@ -222,6 +222,8 @@ def parse_args() -> None:
     dry_run = args.dry_run
     global minimal
     minimal = args.minimal
+    global removed
+    removed = args.removed
     global errors_only
     errors_only = args.errors_only
     if errors_only:
