@@ -334,7 +334,7 @@ def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
     else:
         report += "    [INFO]: Removed 0 subtitle blocks.\n"
 
-    if len(subtitle.warning_blocks) > 0 and !removed:
+    if len(subtitle.warning_blocks) > 0 and not removed:
         report += "    [WARNING]: Potential ads in " + \
                 str(len(subtitle.warning_blocks)) + " subtitle blocks, please verify:\n"
         report += "               [---------Warning Blocks----------]"
