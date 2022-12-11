@@ -18,6 +18,7 @@ default_language: str
 dry_run: bool
 silent: bool
 minimal: bool
+removed: bool
 errors_only: bool
 no_log: bool
 regex_defaults: bool
@@ -149,6 +150,9 @@ def parse_args() -> None:
     parser.add_argument("--minimal", "-m", action="store_true", dest="minimal",
                         help="Mininal: If flag is set then script will show less info.")
     
+    parser.add_argument("--removed", "-a", action="store_true", dest="removed",
+                        help="Removed Only: If flag is set then script will only show removed blocks")
+    
     parser.add_argument("--errors", "-e", action="store_true", dest="errors_only",
                         help="Errors: If flag is set then script will show only the errors and will run in --dry-run mode.")
     
@@ -218,6 +222,8 @@ def parse_args() -> None:
     dry_run = args.dry_run
     global minimal
     minimal = args.minimal
+    global removed
+    removed = args.removed
     global errors_only
     errors_only = args.errors_only
     if errors_only:
@@ -308,6 +314,8 @@ def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
         return ""
     if minimal and not (len(subtitle.ad_blocks) > 0 or len(subtitle.warning_blocks) > 0):
         return ""
+    if removed and not (len(subtitle.ad_blocks) > 0):
+        return ""
     
     report = "SUBTITLE: \"" + str(subtitle_file) + "\"\n"
     if dry_run:
@@ -330,7 +338,7 @@ def generate_out(subtitle_file: Path, subtitle: Subtitle) -> str:
     else:
         report += "    [INFO]: Removed 0 subtitle blocks.\n"
 
-    if len(subtitle.warning_blocks) > 0:
+    if len(subtitle.warning_blocks) > 0 and not removed:
         report += "    [WARNING]: Potential ads in " + \
                 str(len(subtitle.warning_blocks)) + " subtitle blocks, please verify:\n"
         report += "               [---------Warning Blocks----------]"
