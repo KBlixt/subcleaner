@@ -89,7 +89,11 @@ class Cleaner(object):
             if index == 0:
                 if post_block.regex_matches >= 3:
                     if (post_block.start_time - block.stop_time) < timedelta(seconds=1):
-                        subtitle.ad_blocks.append(block)
+                        if block in subtitle.warning_blocks:
+                            subtitle.ad_blocks.append(block)
+                            subtitle.warning_blocks.remove(block)
+                        else:
+                            subtitle.warning_blocks.append(block)
                         continue
                     else:
                         subtitle.warning_blocks.append(block)
@@ -98,7 +102,11 @@ class Cleaner(object):
             elif index == len(subtitle.blocks) - 1:
                 if pre_block.regex_matches >= 3:
                     if (block.start_time - pre_block.stop_time) < timedelta(seconds=1):
-                        subtitle.ad_blocks.append(block)
+                        if block in subtitle.warning_blocks:
+                            subtitle.ad_blocks.append(block)
+                            subtitle.warning_blocks.remove(block)
+                        else:
+                            subtitle.warning_blocks.append(block)
                         continue
                     else:
                         subtitle.warning_blocks.append(block)
