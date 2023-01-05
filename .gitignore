@@ -280,6 +280,7 @@ $RECYCLE.BIN/
 /removed.log
 /.idea
 /subcleaner.conf
+/logs
 /log
 /regex/*
 /databases/

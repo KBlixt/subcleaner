@@ -57,13 +57,20 @@ def find_ads(subtitle: Subtitle) -> None:
         elif block.regex_matches == 2:
             subtitle.warning_blocks.append(block)
 
+        if index == len(subtitle.blocks) - 1:
+            continue
+
         pre_block: SubBlock = subtitle.blocks[max(index - 1, 0)]
         post_block: SubBlock = subtitle.blocks[min(index + 1, len(subtitle.blocks) - 1)]
 
         if index == 0:
             if post_block.regex_matches >= 3:
                 if (post_block.start_time - block.end_time) < timedelta(seconds=1):
-                    subtitle.ad_blocks.append(block)
+                    if block in subtitle.warning_blocks:
+                        subtitle.ad_blocks.append(block)
+                        subtitle.warning_blocks.remove(block)
+                    else:
+                        subtitle.warning_blocks.append(block)
                     continue
                 else:
                     subtitle.warning_blocks.append(block)
@@ -72,7 +79,11 @@ def find_ads(subtitle: Subtitle) -> None:
         elif index == len(subtitle.blocks) - 1:
             if pre_block.regex_matches >= 3:
                 if (block.start_time - pre_block.end_time) < timedelta(seconds=1):
-                    subtitle.ad_blocks.append(block)
+                    if block in subtitle.warning_blocks:
+                        subtitle.ad_blocks.append(block)
+                        subtitle.warning_blocks.remove(block)
+                    else:
+                        subtitle.warning_blocks.append(block)
                     continue
                 else:
                     subtitle.warning_blocks.append(block)
