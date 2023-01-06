@@ -33,9 +33,14 @@ class GlobalProfile:
     warning_regex_lines: list[str]
 
     def __init__(self, parser) -> None:
-        self.excluded_languages = parser.get("META", "excluded_language_codes").replace(" ", "").split(",")
         self.purge_regex_lines = list(parser["PURGE_REGEX"].values())
         self.warning_regex_lines = list(parser["WARNING_REGEX"].values())
+
+        self.excluded_languages = parser["META"].get("excluded_language_codes", "").replace(" ", "").split(",")
+        for language in self.excluded_languages:
+            if not language:
+                self.excluded_languages.remove(language)
+
         for language in purge_regex:
             if any(language == excluded_language for excluded_language in self.excluded_languages):
                 continue
