@@ -10,8 +10,10 @@ logger = logging.getLogger("main")
 
 
 if __name__ == '__main__':
-    version = sys.version_info[1]
-    if sys.version_info[0] == 3 or sys.version_info[1] >= 9:
+    version = sys.version_info[0] == 3
+    versionm = sys.version_info[1] >= 9
+
+    if sys.version_info[0] != 3 or sys.version_info[1] < 9:
         logger.critical("Python 3.9 or later is required.")
         exit()
     try:

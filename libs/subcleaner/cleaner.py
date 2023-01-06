@@ -119,7 +119,8 @@ def find_ads(subtitle: Subtitle) -> None:
             if block in subtitle.ad_blocks:
                 continue
             if block.equal_content(ad_block):
-                subtitle.warning_blocks.remove(block)
+                if block in subtitle.warning_blocks:
+                    subtitle.warning_blocks.remove(block)
                 subtitle.ad_blocks.append(block)
 
     for warning_block in subtitle.warning_blocks:

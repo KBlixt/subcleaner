@@ -48,10 +48,14 @@ if cfg.has_section("PURGE_REGEX") or cfg.has_section("WARNING_REGEX"):
     logger.warning("Config file is out of date. Converting the config file to follow latest config-layout will enable "
                    "more granular ad-detection and warnings.")
 
-log_file = home_dir.joinpath(cfg["SETTINGS"].get("log_dir", "log/") + "subcleaner.log")
-if not log_file.is_absolute():
-    log_dir = home_dir.joinpath(log_file)
-log_file = log_file.resolve()
+log_dir = Path(cfg["SETTINGS"].get("log_dir", "log/"))
+if not log_dir.is_absolute():
+    log_dir = home_dir.joinpath(log_dir)
+if not log_dir.exists():
+    log_dir.mkdir()
+if not log_dir.is_dir():
+    raise ValueError(f"log directory: {log_dir} is not a directory")
+log_file = log_dir.joinpath("subcleaner.log")
 
 relative_base = Path(cfg['SETTINGS'].get("relative_path_base", ""))
 if not relative_base.is_absolute():
