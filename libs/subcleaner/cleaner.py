@@ -1,3 +1,5 @@
+import re
+
 from .subtitle import Subtitle
 from .sub_block import SubBlock
 from re import findall, IGNORECASE, UNICODE
@@ -37,6 +39,18 @@ def run_regex(subtitle: Subtitle) -> None:
 
     if subtitle.blocks[0].start_time < timedelta(seconds=2):
         subtitle.blocks[0].regex_matches = 1
+
+    content_dict: dict[str, list[SubBlock]] = {}
+    for block in subtitle.blocks:
+        content = re.sub("[\\s.,:_-]", "", block.content)
+        if content not in content_dict:
+            content_dict[content] = []
+        content_dict[content].append(block)
+    for duplicate_list in content_dict.values():
+        if len(duplicate_list) <= 1:
+            continue
+        for block in duplicate_list:
+            block.regex_matches += 1
 
 
 def _run_regex_on_block(block: SubBlock, regex_list: list[str], punishment: int) -> None:
@@ -97,12 +111,34 @@ def find_ads(subtitle: Subtitle) -> None:
             else:
                 subtitle.warning_blocks.append(block)
                 continue
+
+    for ad_block in subtitle.ad_blocks:
+        for block in subtitle.blocks:
+            if block == ad_block:
+                continue
+            if block in subtitle.ad_blocks:
+                continue
+            if block.equal_content(ad_block):
+                subtitle.warning_blocks.remove(block)
+                subtitle.ad_blocks.append(block)
+
+    for warning_block in subtitle.warning_blocks:
+        for block in subtitle.blocks:
+            if block == warning_block:
+                continue
+            if block in subtitle.warning_blocks:
+                continue
+            if block.equal_content(warning_block):
+                subtitle.warning_blocks.append(block)
+
     subtitle.dedupe_warning_blocks()
 
 
 def remove_ads(subtitle: Subtitle):
     for block in subtitle.ad_blocks:
         subtitle.blocks.remove(block)
+    subtitle.ad_blocks.sort(key=lambda b: b.original_index)
+    subtitle.warning_blocks.sort(key=lambda b: b.original_index)
 
 
 def fix_overlap(subtitle: Subtitle) -> None:

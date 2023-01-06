@@ -48,11 +48,14 @@ def _load_profile(profile_file: Path) -> None:
 
     try:
         parser.read(profile_file)
-        if "excluded_language_codes" in parser["META"].keys():
+
+        languages = parser["META"].get("language_codes", "").replace(" ", "")
+
+        if "excluded_language_codes" in parser["META"].keys() or not languages:
             global_profiles.append(GlobalProfile(parser))
             return
 
-        for language in parser["META"].get("language_codes", "").replace(" ", "").split(","):
+        for language in languages.split(","):
             if language not in purge_regex:
                 _create_language(language)
             purge_regex[language] += list(parser["PURGE_REGEX"].values())
