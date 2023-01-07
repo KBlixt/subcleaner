@@ -66,10 +66,7 @@ for library_str in args.library:
     for item in glob(str(library)):
         item = Path(item).resolve()
         if item.is_dir():
-            try:
-                libraries.append(item.relative_to(config.relative_base))
-            except ValueError:
-                libraries.append(item)
+            libraries.append(item)
 
 subtitles = []
 for file_str in args.subtitle:
@@ -83,10 +80,7 @@ for file_str in args.subtitle:
     for item in glob(str(file)):
         item = Path(item).resolve()
         if item.is_file() and item.name[-4:] == ".srt":
-            try:
-                subtitles.append(item.relative_to(config.relative_base))
-            except ValueError:
-                subtitles.append(item)
+            subtitles.append(item)
 
 language = None
 if args.language:
