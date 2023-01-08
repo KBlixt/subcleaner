@@ -10,7 +10,6 @@ from . import util
 logger = logging.getLogger("sub_block")
 
 
-@dataclasses.dataclass()
 class SubBlock(object):
     original_index: int
     content: str

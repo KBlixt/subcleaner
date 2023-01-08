@@ -40,12 +40,12 @@ def run_regex(subtitle: Subtitle) -> None:
     if subtitle.blocks[0].start_time < timedelta(seconds=2):
         subtitle.blocks[0].regex_matches = 1
 
-    content_dict: Dict[str, list[SubBlock]] = {}
+    content_dict: Dict[str, List[SubBlock]] = {}
     for block in subtitle.blocks:
         content = re.sub("[\\s.,:_-]", "", block.content)
         if content not in content_dict:
-            content_Dict[content] = []
-        content_Dict[content].append(block)
+            content_dict[content] = []
+        content_dict[content].append(block)
     for duplicate_list in content_dict.values():
         if len(duplicate_list) <= 1:
             continue

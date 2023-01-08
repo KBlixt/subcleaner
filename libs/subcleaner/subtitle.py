@@ -10,7 +10,6 @@ from pathlib import Path
 logger = logging.getLogger("subtitle")
 
 
-@dataclasses.dataclass()
 class Subtitle(object):
     blocks: List[SubBlock]
     ad_blocks: List[SubBlock]
@@ -106,7 +105,7 @@ class Subtitle(object):
             index += 1
         return content[:-1]
 
-    def get_warning_indexes(self) -> list[str]:
+    def get_warning_indexes(self) -> List[str]:
         l: List[str] = []
         for block in self.warning_blocks:
             l.append(str(self.index_of(block)))

@@ -11,8 +11,8 @@ import logging
 logger = logging.getLogger("regex")
 
 global_profiles: List[GlobalProfile] = []
-purge_regex: Dict[str, list[str]] = {}
-warning_regex: Dict[str, list[str]] = {}
+purge_regex: Dict[str, List[str]] = {}
+warning_regex: Dict[str, List[str]] = {}
 
 
 def get_purge_regex(language: str):
