@@ -30,7 +30,7 @@ def clean_file(subtitle_file: Path) -> None:
     if subtitle_file.name in files_handled:
         return
     logger.info("[---------------------------------------------------------------------------------]")
-    logger.info(f"now cleaning subtitle: {subtitle_file}")
+    logger.info(f"now cleaning subtitle: {subtitle_file.relative_to(config.relative_base)}")
 
     try:
         subtitle = Subtitle(subtitle_file)

@@ -80,7 +80,7 @@ class Subtitle(object):
         self.language = "und"
 
         for suffix in self.file.suffixes[-3:-1]:
-            parsed_lang = suffix.replace(":", "-").replace("_", "-").split("-")[0]
+            parsed_lang = suffix.replace(":", "-").replace("_", "-").split("-")[0][1:]
             if languages.is_language(parsed_lang):
                 self.language = parsed_lang
                 return
