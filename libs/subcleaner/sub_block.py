@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import datetime
 import logging
 import re
@@ -35,7 +33,7 @@ class SubBlock(object):
         if len(rows) > 2:
             self.content = "\n".join(rows[2:])
 
-    def equal_content(self, block: SubBlock) -> bool:
+    def equal_content(self, block: "SubBlock") -> bool:
         t = re.sub("[\\s.,:_-]", "", self.content)
         o = re.sub("[\\s.,:_-]", "", block.content)
         return t == o

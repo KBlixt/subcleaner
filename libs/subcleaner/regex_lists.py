@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import configparser
 from pathlib import Path
 from typing import List, Dict
@@ -9,7 +7,7 @@ import logging
 
 logger = logging.getLogger("regex")
 
-global_profiles: List[GlobalProfile] = []
+global_profiles: List["GlobalProfile"] = []
 purge_regex: Dict[str, List[str]] = {}
 warning_regex: Dict[str, List[str]] = {}
 
