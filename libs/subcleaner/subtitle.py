@@ -45,8 +45,20 @@ class Subtitle(object):
         raw_blocks = file_content.split("\n\n")
 
         for raw_block in raw_blocks:
-            if raw_block:
-                self.blocks.append(SubBlock(raw_block))
+            if not raw_block:
+                continue
+
+            self._breakup_block(raw_block)
+
+    def _breakup_block(self, raw_block: str) -> None:
+        t = raw_block.strip().split("\n")
+        for i in range(2, len(t)):
+            if "-->" in t[i] and t[i - 1].isnumeric():
+                self._breakup_block("\n".join(t[:i - 1]))
+                self._breakup_block("\n".join(t[i - 1:]))
+                return
+
+        self.blocks.append(SubBlock(raw_block))
 
     def mark_blocks_for_deletion(self, purge_list: List[int]) -> None:
         for index in purge_list:
