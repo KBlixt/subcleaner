@@ -1,8 +1,8 @@
 import logging
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawTextHelpFormatter
 from glob import glob
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 from libs.subcleaner import config, languages
 
@@ -11,10 +11,16 @@ logger = logging.getLogger("args")
 parser = ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
                                     "Can also check that the subtitle language match the file name language code. ")
 
-subtitles: list[Path]
+subtitles: List[Path]
 parser.add_argument("subtitle", metavar="SUB", type=str, default=list(), nargs="*",
                     help="Path to subtitles to run script against. "
                          "Script currently only compatible with simple .srt files.")
+
+libraries: List[Path]
+parser.add_argument("--library", "-r", metavar="LIB", type=str, dest="library", default=list(), nargs="*",
+                    help="Run the script also on any subtitle found recursively under directory LIB. "
+                         "If LANG is specified it will only run it on subtitles that have a "
+                         "language label matching LANG.")
 
 language: Optional[str]
 parser.add_argument("--language", "-l", metavar="LANG", type=str, dest="language", default=None,
@@ -22,13 +28,7 @@ parser.add_argument("--language", "-l", metavar="LANG", type=str, dest="language
                          "check that the language of the content matches LANG and report results to log. "
                          "code may contain :forced or other \"LANG:<tag>\" but these tags will be ignored")
 
-libraries: list[Path]
-parser.add_argument("--library", "-r", metavar="LIB", type=str, dest="library", default=list(), nargs="*",
-                    help="Run the script also on any subtitle found recursively under directory LIB. "
-                         "If LANG is specified it will only run it on subtitles that have a "
-                         "language label matching LANG.")
-
-purge_list: list[int]
+purge_list: List[int]
 parser.add_argument("--destroy", "-d", type=int, nargs="+", default=list(),
                     help="original_index of blocks to remove from SUB, this option is not compatible with the "
                          "library option. When this option is passed the script will mark the "
@@ -42,6 +42,20 @@ parser.add_argument("--dry-run", "-n", action="store_true", dest="dry_run",
 silent: bool
 parser.add_argument("--silent", "-s", action="store_true", dest="silent",
                     help="Silent: If flag is set then script don't print info messages to console.")
+
+minimal: bool
+parser.add_argument("--minimal", "-m", action="store_true", dest="minimal",
+                    help="[DEPRECATED] Minimal: If flag is set then script will show less info."
+                         "deprecated, this does nothing at the moment.")
+
+removed_only: bool
+parser.add_argument("--removed", "-a", action="store_true", dest="removed_only",
+                    help="Removed Only: If flag is set then script will only show removed blocks.")
+
+errors_only: bool
+parser.add_argument("--errors", "-e", action="store_true", dest="errors_only",
+                    help="Errors: If flag is set then script will show only "
+                         "the errors and will run in --dry-run mode.")
 
 no_log: bool
 parser.add_argument("--no-log", action="store_true", dest="no_log",
@@ -86,14 +100,16 @@ language = None
 if args.language:
     language = args.language.replace("-", ":").split(":")[0].replace("\"", "").replace("'", "").lower()
     if not languages.is_language(language):
-        logger.warning("'" + args.language + "' is not a valid ISO-639 language.\n--help for more information.")
+        logger.error("'" + args.language + "' is not a valid ISO-639 language.\n--help for more information.")
         exit(1)
 
 destroy_list = args.destroy
 if destroy_list and (len(subtitles) != 1 or len(libraries) != 0):
-    logger.warning("option --destroy require one and only one specified subtitle file.\nsee --help for more info.")
+    logger.error("option --destroy require one and only one specified subtitle file.\nsee --help for more info.")
     exit(1)
 
 silent = args.silent
 no_log = args.no_log
 dry_run = args.dry_run
+errors_only = args.errors_only
+removed_only = args.removed_only

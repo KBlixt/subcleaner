@@ -1,6 +1,6 @@
 import dataclasses
 import logging
-from typing import Optional
+from typing import Optional, List
 
 from . import util, args, config, languages
 from .sub_block import SubBlock, ParsingException
@@ -12,9 +12,9 @@ logger = logging.getLogger("subtitle")
 
 @dataclasses.dataclass()
 class Subtitle(object):
-    blocks: list[SubBlock]
-    ad_blocks: list[SubBlock]
-    warning_blocks: list[SubBlock]
+    blocks: List[SubBlock]
+    ad_blocks: List[SubBlock]
+    warning_blocks: List[SubBlock]
     language: Optional[str]
     file: Path
 
@@ -24,20 +24,15 @@ class Subtitle(object):
         self.ad_blocks = []
         self.warning_blocks = []
 
-        try:
-            self.file = self.file.relative_to(config.relative_base)
-        except ValueError:
-            pass
-
-        file_content = util.read_file(subtitle_file)
+        file_content = util.read_file(self.file)
         try:
             self._parse_file_content(file_content)
         except ParsingException as e:
-            e.subtitle_file = subtitle_file
+            e.subtitle_file = self.file
             raise e
 
         if not self:
-            raise SubtitleContentException(subtitle_file)
+            raise SubtitleContentException(self.file)
 
         self.language = args.language
         if not self.language:
@@ -55,7 +50,7 @@ class Subtitle(object):
             if raw_block:
                 self.blocks.append(SubBlock(raw_block))
 
-    def mark_blocks_for_deletion(self, purge_list: list[int]) -> None:
+    def mark_blocks_for_deletion(self, purge_list: List[int]) -> None:
         for index in purge_list:
             if index-1 >= len(self.blocks):
                 continue
@@ -73,7 +68,7 @@ class Subtitle(object):
         for block in self.blocks:
             sub_content += block.content
 
-        if len(sub_content) < 200:
+        if len(sub_content) < 500:
             return True  # not enough content to estimate language.
         detected_language = langdetect.detect_langs(sub_content)[0]
 
@@ -95,7 +90,7 @@ class Subtitle(object):
         sub_content: str = ""
         for block in self.blocks:
             sub_content += block.content
-        if len(sub_content) < 200:
+        if len(sub_content) < 500:
             return
         detected_language = langdetect.detect_langs(sub_content)[0]
         if detected_language.prob > 0.9:
@@ -112,7 +107,7 @@ class Subtitle(object):
         return content[:-1]
 
     def get_warning_indexes(self) -> list[str]:
-        l: list[str] = []
+        l: List[str] = []
         for block in self.warning_blocks:
             l.append(str(self.index_of(block)))
         return l

@@ -1,5 +1,5 @@
 import re
-
+from typing import List, Dict
 from .subtitle import Subtitle
 from .sub_block import SubBlock
 from re import findall, IGNORECASE, UNICODE
@@ -40,7 +40,7 @@ def run_regex(subtitle: Subtitle) -> None:
     if subtitle.blocks[0].start_time < timedelta(seconds=2):
         subtitle.blocks[0].regex_matches = 1
 
-    content_dict: dict[str, list[SubBlock]] = {}
+    content_dict: Dict[str, list[SubBlock]] = {}
     for block in subtitle.blocks:
         content = re.sub("[\\s.,:_-]", "", block.content)
         if content not in content_dict:
@@ -53,7 +53,7 @@ def run_regex(subtitle: Subtitle) -> None:
             block.regex_matches += 1
 
 
-def _run_regex_on_block(block: SubBlock, regex_list: list[str], punishment: int) -> None:
+def _run_regex_on_block(block: SubBlock, regex_list: List[str], punishment: int) -> None:
     clean_content = " ".join(block.content.replace("-\n", "-").split())
     for regex in regex_list:
         result = findall(regex, clean_content, flags=IGNORECASE | UNICODE)

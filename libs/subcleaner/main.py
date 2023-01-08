@@ -1,6 +1,6 @@
 from pathlib import Path
 import logging
-
+from typing import List
 from .subtitle import Subtitle, ParsingException, SubtitleContentException
 from libs.subcleaner import cleaner, report_generator
 from . import args
@@ -9,7 +9,7 @@ from . import config
 logger = logging.getLogger("main")
 logger.setLevel(logging.INFO)
 
-files_handled: list[str] = []
+files_handled: List[str] = []
 
 
 def main():
@@ -54,14 +54,14 @@ def clean_file(subtitle_file: Path) -> None:
                      "Nothing was altered.")
         return
 
-    if args.dry_run:
-        logger.warning("dry run: nothing was altered.")
     else:
         with subtitle_file.open("w", encoding="UTF-8") as file:
             file.write(subtitle.to_content())
 
     files_handled.append(subtitle_file.name)
     logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")
+    if args.dry_run:
+        logger.warning("dry run: nothing was altered.")
 
 
 def clean_directory(directory: Path) -> None:

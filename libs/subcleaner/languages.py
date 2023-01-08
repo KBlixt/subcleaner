@@ -1,12 +1,12 @@
 import json
-from typing import Optional
+from typing import Optional, List, Dict
 
 from libs.subcleaner import config
 
-_languages: list[dict[str, str]]
-_language_names: list[str] = []
-_language_codes_2: list[str] = []
-_language_codes_3: list[str] = []
+_languages: List[dict[str, str]]
+_language_names: List[str] = []
+_language_codes_2: List[str] = []
+_language_codes_3: List[str] = []
 
 
 def load_language_data() -> None:

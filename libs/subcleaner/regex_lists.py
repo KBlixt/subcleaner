@@ -3,15 +3,16 @@ from __future__ import annotations
 import configparser
 import dataclasses
 from pathlib import Path
+from typing import List, Dict
 
 from libs.subcleaner import config
 import logging
 
 logger = logging.getLogger("regex")
 
-global_profiles: list[GlobalProfile] = []
-purge_regex: dict[str, list[str]] = {}
-warning_regex: dict[str, list[str]] = {}
+global_profiles: List[GlobalProfile] = []
+purge_regex: Dict[str, list[str]] = {}
+warning_regex: Dict[str, list[str]] = {}
 
 
 def get_purge_regex(language: str):
@@ -28,9 +29,9 @@ def get_warning_regex(language: str):
 
 @dataclasses.dataclass
 class GlobalProfile:
-    excluded_languages: list[str]
-    purge_regex_lines: list[str]
-    warning_regex_lines: list[str]
+    excluded_languages: List[str]
+    purge_regex_lines: List[str]
+    warning_regex_lines: List[str]
 
     def __init__(self, parser) -> None:
         self.purge_regex_lines = list(parser["PURGE_REGEX"].values())
