@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import configparser
-import dataclasses
 from pathlib import Path
 from typing import List, Dict
 
@@ -27,7 +26,6 @@ def get_warning_regex(language: str):
     return warning_regex[language]
 
 
-@dataclasses.dataclass
 class GlobalProfile:
     excluded_languages: List[str]
     purge_regex_lines: List[str]
