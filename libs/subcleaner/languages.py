@@ -3,7 +3,7 @@ from typing import Optional, List, Dict
 
 from libs.subcleaner import config
 
-_languages: List[dict[str, str]]
+_languages: List[Dict[str, str]]
 _language_names: List[str] = []
 _language_codes_2: List[str] = []
 _language_codes_3: List[str] = []

@@ -44,8 +44,8 @@ def run_regex(subtitle: Subtitle) -> None:
     for block in subtitle.blocks:
         content = re.sub("[\\s.,:_-]", "", block.content)
         if content not in content_dict:
-            content_dict[content] = []
-        content_dict[content].append(block)
+            content_Dict[content] = []
+        content_Dict[content].append(block)
     for duplicate_list in content_dict.values():
         if len(duplicate_list) <= 1:
             continue
