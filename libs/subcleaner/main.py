@@ -54,14 +54,14 @@ def clean_file(subtitle_file: Path) -> None:
                      "Nothing was altered.")
         return
 
+    files_handled.append(subtitle_file.name)
+    logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")
+
+    if args.dry_run:
+        logger.warning("dry run: nothing was altered.")
     else:
         with subtitle_file.open("w", encoding="UTF-8") as file:
             file.write(subtitle.to_content())
-
-    files_handled.append(subtitle_file.name)
-    logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")
-    if args.dry_run:
-        logger.warning("dry run: nothing was altered.")
 
 
 def clean_directory(directory: Path) -> None:
