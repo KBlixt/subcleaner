@@ -32,6 +32,8 @@ class SubBlock(object):
 
         if len(rows) > 2:
             self.content = "\n".join(rows[2:])
+        else:
+            self.content = ""
 
     def equal_content(self, block: "SubBlock") -> bool:
         t = re.sub("[\\s.,:_-]", "", self.content)
