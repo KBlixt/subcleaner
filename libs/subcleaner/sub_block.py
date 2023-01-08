@@ -17,7 +17,10 @@ class SubBlock(object):
     def __init__(self, block_content: str):
         rows = block_content.strip().split("\n")
 
-        self.original_index = int(rows[0])
+        try:
+            self.original_index = int(rows[0])
+        except ValueError:
+            raise ParsingException(rows[0])
         if len(rows) == 1:
             raise ParsingException(self.original_index)
 
