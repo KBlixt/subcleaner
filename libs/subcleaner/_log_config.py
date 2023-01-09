@@ -8,7 +8,7 @@ time_formatter = logging.Formatter("{asctime} - {levelname:>8}: {message}", styl
 formatter = logging.Formatter("{levelname:>8}: {message}", style="{",)
 
 # handlers
-file_handler = logging.handlers.RotatingFileHandler(config.log_file, maxBytes=1_000_000, backupCount=10)
+file_handler = logging.handlers.RotatingFileHandler(config.log_file, maxBytes=10_000_000, backupCount=10)
 file_handler.setFormatter(time_formatter)
 file_handler.setLevel(logging.INFO)
 if args.errors_only:

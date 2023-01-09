@@ -1,10 +1,11 @@
 import re
 from typing import List, Dict
+
 from .subtitle import Subtitle
 from .sub_block import SubBlock
 from re import findall, IGNORECASE, UNICODE
 from datetime import timedelta
-from . import regex_lists
+from . import regex_lists, args
 
 
 def run_regex(subtitle: Subtitle) -> None:
@@ -135,8 +136,21 @@ def find_ads(subtitle: Subtitle) -> None:
 
 
 def remove_ads(subtitle: Subtitle):
+    if args.sensitive and len(subtitle.blocks) > 1:
+        if subtitle.blocks[0] not in subtitle.warning_blocks and subtitle.blocks[0] not in subtitle.ad_blocks:
+            subtitle.warning_blocks.append(subtitle.blocks[0])
+        if subtitle.blocks[-1] not in subtitle.warning_blocks and subtitle.blocks[-1] not in subtitle.ad_blocks:
+            subtitle.warning_blocks.append(subtitle.blocks[-1])
+        for i in range(1, len(subtitle.blocks)-1):
+            prev_block = subtitle.blocks[i - 1]
+            block = subtitle.blocks[i]
+            next_block = subtitle.blocks[i + 1]
+            if prev_block in subtitle.ad_blocks or next_block in subtitle.ad_blocks:
+                if block not in subtitle.warning_blocks and block not in subtitle.ad_blocks:
+                    subtitle.warning_blocks.append(block)
     for block in subtitle.ad_blocks:
         subtitle.blocks.remove(block)
+
     subtitle.ad_blocks.sort(key=lambda b: b.original_index)
     subtitle.warning_blocks.sort(key=lambda b: b.original_index)
 

@@ -61,6 +61,10 @@ no_log: bool
 parser.add_argument("--no-log", action="store_true", dest="no_log",
                     help="No log: If flag is set then nothing is logged.")
 
+sensitive: bool
+parser.add_argument("--sensitive", action="store_true", dest="sensitive",
+                    help="Sensitive: logs all blocks adjacent to ads as warnings.")
+
 args = parser.parse_args()
 # check usage:
 
@@ -113,3 +117,4 @@ no_log = args.no_log
 dry_run = args.dry_run
 errors_only = args.errors_only
 removed_only = args.removed_only
+sensitive = args.sensitive
