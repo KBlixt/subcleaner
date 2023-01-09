@@ -20,25 +20,24 @@ def run_regex(subtitle: Subtitle) -> None:
         if block.regex_matches == 0:
             block.regex_matches = -1
 
-    if len(subtitle.blocks) >= 10:
-        for index in range(0, len(subtitle.blocks)):
-            if index < 3 or index > len(subtitle.blocks) - 4:
+    for index in range(0, len(subtitle.blocks)):
+        if index < 3 or index > len(subtitle.blocks) - 4:
+            subtitle.blocks[index].regex_matches += 1
+            continue
+        for block in subtitle.blocks[max(0, index - 1): min(index + 2, len(subtitle.blocks))]:
+            if block.regex_matches >= 2 and block != subtitle.blocks[index]:
                 subtitle.blocks[index].regex_matches += 1
-                continue
-            for block in subtitle.blocks[max(0, index - 1): min(index + 2, len(subtitle.blocks))]:
-                if block.regex_matches >= 2 and block != subtitle.blocks[index]:
-                    subtitle.blocks[index].regex_matches += 1
-                    break
+                break
 
-    if len(subtitle.blocks) >= 100:
+    if len(subtitle.blocks) >= 50:
         for index in range(0, len(subtitle.blocks)):
             for block in subtitle.blocks[max(0, index - 15): min(index + 16, len(subtitle.blocks))]:
                 if block.regex_matches >= 3:
                     subtitle.blocks[index].regex_matches += 1
                     break
 
-    if subtitle.blocks[0].start_time < timedelta(seconds=2):
-        subtitle.blocks[0].regex_matches = 1
+    if subtitle.blocks[0].start_time < timedelta(seconds=1):
+        subtitle.blocks[0].regex_matches += 1
 
     content_dict: Dict[str, List[SubBlock]] = {}
     for block in subtitle.blocks:

@@ -58,7 +58,9 @@ class Subtitle(object):
                 self._breakup_block("\n".join(t[i - 1:]))
                 return
 
-        self.blocks.append(SubBlock(raw_block))
+        block = SubBlock(raw_block)
+        if block.content:
+            self.blocks.append(block)
 
     def mark_blocks_for_deletion(self, purge_list: List[int]) -> None:
         for index in purge_list:
