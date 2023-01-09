@@ -15,6 +15,7 @@ class Subtitle(object):
     warning_blocks: List[SubBlock]
     language: Optional[str]
     file: Path
+    short_path: Path
 
     def __init__(self, subtitle_file: Path) -> None:
         self.file = subtitle_file
@@ -28,6 +29,10 @@ class Subtitle(object):
         except ParsingException as e:
             e.subtitle_file = self.file
             raise e
+        try:
+            self.short_path = self.file.relative_to(config.relative_base)
+        except ValueError:
+            self.short_path = self.file
 
         if not self:
             raise SubtitleContentException(self.file)

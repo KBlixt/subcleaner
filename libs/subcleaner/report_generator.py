@@ -15,15 +15,11 @@ def generate_report(subtitle: Subtitle) -> str:
         _add("")
         _add(_deleted_card(subtitle), " " * 4)
     if subtitle.warning_blocks and not args.errors_only:
-        try:
-            sub_file = subtitle.file.relative_to(config.relative_base)
-        except ValueError:
-            sub_file = subtitle.file
         _add("")
         _add(_warning_card(subtitle), " " * 40)
         _add("")
         _add("To delete all remaining warnings run:")
-        _add(f"python3 '{config.script_file}' '{sub_file}' -d {' '.join(subtitle.get_warning_indexes())}")
+        _add(f"python3 '{config.script_file}' '{subtitle.short_path}' -d {' '.join(subtitle.get_warning_indexes())}")
 
     return _report[1:]
 

@@ -30,17 +30,18 @@ def clean_file(subtitle_file: Path) -> None:
     if subtitle_file.name in files_handled:
         return
     logger.info("[---------------------------------------------------------------------------------]")
-    logger.info(f"now cleaning subtitle: {subtitle_file.relative_to(config.relative_base)}")
 
     try:
         subtitle = Subtitle(subtitle_file)
     except (UnicodeDecodeError, ParsingException, SubtitleContentException) as e:
+        logger.info(f"now cleaning subtitle: {subtitle_file}")
         logger.error(f"subcleaner was unable to decode the file. reason:")
         logger.error(e)
         return
     if len(subtitle.blocks) == 0:
         logger.warning("Subtitle file is empty.")
         return
+    logger.info(f"now cleaning subtitle: {subtitle.short_path}")
 
     cleaner.run_regex(subtitle)
     cleaner.find_ads(subtitle)
