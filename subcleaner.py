@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+
 from configparser import DuplicateOptionError
 from libs.subcleaner import main
 

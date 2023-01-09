@@ -1,6 +1,6 @@
 from typing import Optional
 
-from libs.subcleaner import config
+from libs.subcleaner import config, args
 from libs.subcleaner.subtitle import Subtitle
 
 _report_base = "          | "
@@ -14,19 +14,17 @@ def generate_report(subtitle: Subtitle) -> str:
     if subtitle.ad_blocks:
         _add("")
         _add(_deleted_card(subtitle), " " * 4)
-    if subtitle.warning_blocks:
+    if subtitle.warning_blocks and not args.errors_only:
         _add("")
         _add(_warning_card(subtitle), " " * 40)
         _add("")
         _add("To delete all remaining warnings run:")
-        _add(f"python3 '{config.script_file}' '{subtitle.file}' -d {' '.join(subtitle.get_warning_indexes())}")
+        _add(f"python3 '{config.script_file}' '{subtitle.short_path}' -d {' '.join(subtitle.get_warning_indexes())}")
 
     return _report[1:]
 
 
-def _add(lines: str, spacer: Optional[str] = "") -> None:
-    if not spacer:
-        spacer = ""
+def _add(lines: str, spacer: str = "") -> None:
     lines = "\n" + lines
 
     global _report

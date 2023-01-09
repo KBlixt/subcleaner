@@ -1,17 +1,15 @@
-from __future__ import annotations
-
 import configparser
-import dataclasses
 from pathlib import Path
+from typing import List, Dict
 
 from libs.subcleaner import config
 import logging
 
 logger = logging.getLogger("regex")
 
-global_profiles: list[GlobalProfile] = []
-purge_regex: dict[str, list[str]] = {}
-warning_regex: dict[str, list[str]] = {}
+global_profiles: List["GlobalProfile"] = []
+purge_regex: Dict[str, List[str]] = {}
+warning_regex: Dict[str, List[str]] = {}
 
 
 def get_purge_regex(language: str):
@@ -26,16 +24,20 @@ def get_warning_regex(language: str):
     return warning_regex[language]
 
 
-@dataclasses.dataclass
 class GlobalProfile:
-    excluded_languages: list[str]
-    purge_regex_lines: list[str]
-    warning_regex_lines: list[str]
+    excluded_languages: List[str]
+    purge_regex_lines: List[str]
+    warning_regex_lines: List[str]
 
     def __init__(self, parser) -> None:
-        self.excluded_languages = parser.get("META", "excluded_language_codes").replace(" ", "").split(",")
         self.purge_regex_lines = list(parser["PURGE_REGEX"].values())
         self.warning_regex_lines = list(parser["WARNING_REGEX"].values())
+
+        self.excluded_languages = parser["META"].get("excluded_language_codes", "").replace(" ", "").split(",")
+        for language in self.excluded_languages:
+            if not language:
+                self.excluded_languages.remove(language)
+
         for language in purge_regex:
             if any(language == excluded_language for excluded_language in self.excluded_languages):
                 continue
@@ -48,11 +50,14 @@ def _load_profile(profile_file: Path) -> None:
 
     try:
         parser.read(profile_file)
-        if "excluded_language_codes" in parser["META"].keys():
+
+        languages = parser["META"].get("language_codes", "").replace(" ", "")
+
+        if "excluded_language_codes" in parser["META"].keys() or not languages:
             global_profiles.append(GlobalProfile(parser))
             return
 
-        for language in parser["META"].get("language_codes", "").replace(" ", "").split(","):
+        for language in languages.split(","):
             if language not in purge_regex:
                 _create_language(language)
             purge_regex[language] += list(parser["PURGE_REGEX"].values())

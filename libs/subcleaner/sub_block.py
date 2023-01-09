@@ -1,13 +1,12 @@
-import dataclasses
 import datetime
 import logging
+import re
 
 from . import util
 
 logger = logging.getLogger("sub_block")
 
 
-@dataclasses.dataclass()
 class SubBlock(object):
     original_index: int
     content: str
@@ -18,7 +17,10 @@ class SubBlock(object):
     def __init__(self, block_content: str):
         rows = block_content.strip().split("\n")
 
-        self.original_index = int(rows[0])
+        try:
+            self.original_index = int(rows[0])
+        except ValueError:
+            raise ParsingException(rows[0])
         if len(rows) == 1:
             raise ParsingException(self.original_index)
 
@@ -33,6 +35,13 @@ class SubBlock(object):
 
         if len(rows) > 2:
             self.content = "\n".join(rows[2:])
+        else:
+            self.content = ""
+
+    def equal_content(self, block: "SubBlock") -> bool:
+        t = re.sub("[\\s.,:_-]", "", self.content)
+        o = re.sub("[\\s.,:_-]", "", block.content)
+        return t == o
 
     def __str__(self) -> str:
         string = f"{util.timedelta_to_time_string(self.start_time)} --> {util.timedelta_to_time_string(self.end_time)}\n" \
