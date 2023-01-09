@@ -1,6 +1,6 @@
 import logging
 from argparse import ArgumentParser, RawTextHelpFormatter
-from glob import glob
+import glob
 from pathlib import Path
 from typing import Optional, List
 
@@ -77,7 +77,7 @@ for library_str in args.library:
         else:
             library = config.relative_base.joinpath(library)
 
-    for item in glob(str(library)):
+    for item in glob.glob(glob.escape(str(library)).replace("[*]", "*")):
         item = Path(item).resolve()
         if item.is_dir():
             libraries.append(item)
@@ -91,7 +91,7 @@ for file_str in args.subtitle:
         else:
             file = config.relative_base.joinpath(file)
 
-    for item in glob(str(file)):
+    for item in glob.glob(glob.escape(str(file)).replace("[*]", "*")):
         item = Path(item).resolve()
         if item.is_file() and item.name[-4:] == ".srt":
             subtitles.append(item)
