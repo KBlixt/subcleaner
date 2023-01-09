@@ -51,14 +51,6 @@ the command:
 
 It should work 
 right out the gate provided the paths and permissions are set up correctly.
-If you wish to enable language checking simply add:
-
-``` -l {{subtitles_language_code2}}```
-
-It doesn't really do anything currently. It logs a 
-WARNING in the logfile if the language doesn't match with the labeled. in the future 
-I hope it'll automatically delete miss-labeled languages and add them to
-the bazarr blacklist in order to automatically trigger a re-download.
 
 in the bazarr log it should confirm that the script ran successfully or give you 
 an error message that tells you what's wrong. if nothing is output then you've probably 
@@ -70,6 +62,8 @@ If you run Bazarr in a docker container, as you should,
 make sure the Bazarr container have access to the script directory. Either
 mount /opt/subcleaner directly into the container as a volume or install the script inside 
 the Bazarr config directory. 
+
+please make sure you run the official docker from linuxserver.io.
 
 # Setup
 Install the default config simply by running the script once or copy the default config into
@@ -96,10 +90,11 @@ open an issue or discussion.
 __________________
 ###### Future (possibly):
 
-* add functionality to restore false positives more easily 
-and approve deletion of warning blocks.
+* Automatic subtitle deletion if language don't match label.
+
+* white-list regex maybe?
+
+* better ui for confirming/reverting deletion of ads.
 
 * ASS support?
-
-* Automatic subtitle deletion if language don't match label. (need bazarr to blacklist removed files for this to be implemented)
 
