@@ -56,7 +56,8 @@ def clean_file(subtitle_file: Path) -> None:
         return
 
     files_handled.append(subtitle_file.name)
-    logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")
+    v = report_generator.generate_report(subtitle)
+    logger.info(f"Done. Cleaning report:\n{v}\n")
 
     if args.dry_run:
         logger.warning("dry run: nothing was altered.")

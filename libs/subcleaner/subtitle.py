@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Optional, List
 
 from . import util, args, config, languages
@@ -47,25 +48,17 @@ class Subtitle(object):
             self.mark_blocks_for_deletion(args.destroy_list)
 
     def _parse_file_content(self, file_content: str) -> None:
-        raw_blocks = file_content.split("\n\n")
+        file_content = re.sub(r'\n\s*\n', '\n', file_content)
+        self._breakup_block(file_content.split("\n"))
 
-        for raw_block in raw_blocks:
-            if not raw_block:
-                continue
-
-            self._breakup_block(raw_block)
-
-    def _breakup_block(self, raw_block: str) -> None:
-        t = raw_block.strip().split("\n")
-        for i in range(2, len(t)):
-            if "-->" in t[i] and t[i - 1].isnumeric():
-                self._breakup_block("\n".join(t[:i - 1]))
-                self._breakup_block("\n".join(t[i - 1:]))
-                return
-
-        block = SubBlock(raw_block)
-        if block.content:
-            self.blocks.append(block)
+    def _breakup_block(self, raw_blocks: [str]) -> None:
+        last_break = 0
+        for i in range(2, len(raw_blocks)):
+            if "-->" in raw_blocks[i] and raw_blocks[i - 1].isnumeric():
+                block = SubBlock("\n".join(raw_blocks[last_break:i - 1]))
+                last_break = i - 1
+                if block.content:
+                    self.blocks.append(block)
 
     def mark_blocks_for_deletion(self, purge_list: List[int]) -> None:
         for index in purge_list:

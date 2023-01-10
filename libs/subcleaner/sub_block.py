@@ -34,7 +34,7 @@ class SubBlock(object):
             raise ParsingException(self.original_index)
 
         if len(rows) > 2:
-            self.content = "\n".join(rows[2:])
+            self.content = "\n".join(rows[2:]).strip()
         else:
             self.content = ""
 
