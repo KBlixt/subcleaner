@@ -82,12 +82,11 @@ def find_ads(subtitle: Subtitle) -> None:
                         subtitle.warning_blocks.remove(block)
                     else:
                         subtitle.warning_blocks.append(block)
-                    continue
                 else:
                     subtitle.warning_blocks.append(block)
-                    continue
+            continue
 
-        elif index == len(subtitle.blocks) - 1:
+        if index == len(subtitle.blocks) - 1:
             if pre_block.regex_matches >= 3:
                 if (block.start_time - pre_block.end_time) < timedelta(seconds=1):
                     if block in subtitle.warning_blocks:
@@ -95,12 +94,11 @@ def find_ads(subtitle: Subtitle) -> None:
                         subtitle.warning_blocks.remove(block)
                     else:
                         subtitle.warning_blocks.append(block)
-                    continue
                 else:
                     subtitle.warning_blocks.append(block)
-                    continue
+            continue
 
-        elif pre_block.regex_matches >= 3 and post_block.regex_matches >= 3:
+        if pre_block.regex_matches >= 3 and post_block.regex_matches >= 3:
             if (post_block.start_time - block.end_time) < timedelta(seconds=1) and \
                     (block.start_time - pre_block.end_time) < timedelta(seconds=1):
                 subtitle.ad_blocks.append(block)
@@ -118,10 +116,11 @@ def find_ads(subtitle: Subtitle) -> None:
                 continue
             if block in subtitle.ad_blocks:
                 continue
-            if block.equal_content(ad_block):
-                if block in subtitle.warning_blocks:
-                    subtitle.warning_blocks.remove(block)
-                subtitle.ad_blocks.append(block)
+            if not block.equal_content(ad_block):
+                continue
+            if block in subtitle.warning_blocks:
+                subtitle.warning_blocks.remove(block)
+            subtitle.ad_blocks.append(block)
 
     for warning_block in subtitle.warning_blocks:
         for block in subtitle.blocks:
@@ -129,10 +128,49 @@ def find_ads(subtitle: Subtitle) -> None:
                 continue
             if block in subtitle.warning_blocks:
                 continue
-            if block.equal_content(warning_block):
-                subtitle.warning_blocks.append(block)
+            if not block.equal_content(warning_block):
+                continue
+            subtitle.warning_blocks.append(block)
+
+    cascade_memory: List[SubBlock] = []
+    for i in range(0, len(subtitle.blocks)):
+        block = subtitle.blocks[i]
+
+        cascade: bool = False
+        if i < len(subtitle.blocks)-1:
+            post_block = subtitle.blocks[i + 1]
+            if compare(post_block.content, block.content):
+                cascade = True
+        if i > 0:
+            pre_block = subtitle.blocks[i - 1]
+            if compare(pre_block.content, block.content):
+                cascade = True
+
+        if not cascade:
+            cascade_memory.clear()
+            continue
+
+        if block not in subtitle.ad_blocks:
+            cascade_memory.append(block)
+            continue
+
+        for casc_block in cascade_memory:
+            if casc_block in subtitle.warning_blocks:
+                subtitle.warning_blocks.remove(casc_block)
+            subtitle.ad_blocks.append(casc_block)
+        cascade_memory.clear()
 
     subtitle.dedupe_warning_blocks()
+
+
+def compare(s1: str, s2: str) -> bool:
+    if len(s1) + 1 == len(s2):
+        if s2.startswith(s1) or s2.endswith(s1):
+            return True
+    elif len(s1) == 1 + len(s2):
+        if s1.startswith(s2) or s1.endswith(s2):
+            return True
+    return False
 
 
 def remove_ads(subtitle: Subtitle):
