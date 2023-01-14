@@ -1,8 +1,8 @@
 from pathlib import Path
 import logging
 from typing import List
-from .subtitle import Subtitle, ParsingException, SubtitleContentException
-from libs.subcleaner import cleaner, report_generator
+from .subtitle import Subtitle, ParsingException, FileContentException
+from libs.subcleaner import cleaner, report_generator, languages
 from .settings import args, config
 
 logger = logging.getLogger("main")
@@ -32,7 +32,7 @@ def clean_file(subtitle_file: Path) -> None:
 
     try:
         subtitle = Subtitle(subtitle_file)
-    except (UnicodeDecodeError, ParsingException, SubtitleContentException) as e:
+    except (UnicodeDecodeError, ParsingException, FileContentException) as e:
         logger.info(f"now cleaning subtitle: {subtitle_file}")
         logger.error(f"subcleaner was unable to decode the file. reason:")
         logger.error(e)
@@ -75,5 +75,7 @@ def clean_directory(directory: Path) -> None:
             clean_file(file)
             continue
 
-        if len(file.suffixes) >= 2 and args.language == file.suffixes[-2][1:3]:
-            clean_file(file)
+        for suffix in file.suffixes[max(-3, -len(file.suffixes)):-1]:
+            parsed_lang = suffix.replace(":", "-").replace("_", "-").split("-")[0][1:]
+            if languages.is_language(parsed_lang) and args.language == parsed_lang:
+                clean_file(file)

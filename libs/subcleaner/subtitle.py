@@ -37,7 +37,7 @@ class Subtitle:
             self.short_path = self.file
 
         if not self:
-            raise SubtitleContentException(self.file)
+            raise FileContentException(self.file)
 
         if args.language:
             self.language = args.language
@@ -106,7 +106,7 @@ class Subtitle:
 
         self.language = "und"
 
-        for suffix in self.file.suffixes[-3:-1]:
+        for suffix in self.file.suffixes[max(-3, -len(self.file.suffixes)): -1]:
             parsed_lang = suffix.replace(":", "-").replace("_", "-").split("-")[0][1:]
             if languages.is_language(parsed_lang):
                 self.language = parsed_lang
@@ -154,7 +154,7 @@ class Subtitle:
         return False
 
 
-class SubtitleContentException(Exception):
+class FileContentException(Exception):
     subtitle_file: str
 
     def __init__(self, subtitle_file):
