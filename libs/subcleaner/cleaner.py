@@ -132,38 +132,43 @@ def find_ads(subtitle: Subtitle) -> None:
                 continue
             subtitle.warning_blocks.append(block)
 
-    cascade_memory: List[SubBlock] = []
+    chain: List[SubBlock] = []
     for i in range(0, len(subtitle.blocks)):
         block = subtitle.blocks[i]
 
-        cascade: bool = False
+        link: bool = False
         if i < len(subtitle.blocks)-1:
             post_block = subtitle.blocks[i + 1]
-            if compare(post_block.content, block.content):
-                cascade = True
+            if is_link(post_block.content, block.content):
+                link = True
         if i > 0:
             pre_block = subtitle.blocks[i - 1]
-            if compare(pre_block.content, block.content):
-                cascade = True
+            if is_link(pre_block.content, block.content):
+                link = True
 
-        if not cascade:
-            cascade_memory.clear()
+        if not link:
+            if len(chain) > 3:
+                for chain_block in chain:
+                    if chain_block in subtitle.warning_blocks:
+                        subtitle.warning_blocks.remove(chain_block)
+                    subtitle.ad_blocks.append(chain_block)
+            chain.clear()
             continue
 
         if block not in subtitle.ad_blocks:
-            cascade_memory.append(block)
+            chain.append(block)
             continue
 
-        for casc_block in cascade_memory:
-            if casc_block in subtitle.warning_blocks:
-                subtitle.warning_blocks.remove(casc_block)
-            subtitle.ad_blocks.append(casc_block)
-        cascade_memory.clear()
+        for chain_block in chain:
+            if chain_block in subtitle.warning_blocks:
+                subtitle.warning_blocks.remove(chain_block)
+            subtitle.ad_blocks.append(chain_block)
+        chain.clear()
 
     subtitle.dedupe_warning_blocks()
 
 
-def compare(s1: str, s2: str) -> bool:
+def is_link(s1: str, s2: str) -> bool:
     if len(s1) + 1 == len(s2):
         if s2.startswith(s1) or s2.endswith(s1):
             return True
