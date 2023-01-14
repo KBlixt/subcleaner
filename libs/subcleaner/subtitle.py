@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import List, Set
+from typing import List, Set, Optional
 
 from . import util, args, config, languages
 from .sub_block import SubBlock, ParsingException
@@ -62,6 +62,7 @@ class Subtitle:
 
     def _parse_file_content(self, file_content: str) -> None:
         file_content = re.sub(r'\n\s*\n', '\n', file_content)
+        file_content = file_content.replace("—", "--")
         self._breakup_block(file_content.split("\n"))
 
     def _breakup_block(self, raw_blocks: [str]) -> None:

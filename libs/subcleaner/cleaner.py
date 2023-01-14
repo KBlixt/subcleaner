@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import List, Dict
+from typing import List, Dict, Set
 
 from .subtitle import Subtitle
 from .sub_block import SubBlock
@@ -28,21 +28,27 @@ def run_regex(subtitle: Subtitle) -> None:
         if block.regex_matches == 0:
             block.regex_matches = -1
 
+    blocks_to_punish: Set[SubBlock] = set()
     for index in range(0, len(subtitle.blocks)):
         if index < 3 or index > len(subtitle.blocks) - 4:
-            subtitle.blocks[index].regex_matches += 1
+            blocks_to_punish.add(subtitle.blocks[index])
             continue
         for block in subtitle.blocks[max(0, index - 1): min(index + 2, len(subtitle.blocks))]:
             if block.regex_matches >= 2 and block != subtitle.blocks[index]:
-                subtitle.blocks[index].regex_matches += 1
+                blocks_to_punish.add(subtitle.blocks[index])
                 break
+    for block in blocks_to_punish:
+        block.regex_matches += 1
 
+    blocks_to_punish.clear()
     if len(subtitle.blocks) >= 50:
         for index in range(0, len(subtitle.blocks)):
             for block in subtitle.blocks[max(0, index - 15): min(index + 16, len(subtitle.blocks))]:
                 if block.regex_matches >= 3:
-                    subtitle.blocks[index].regex_matches += 1
+                    blocks_to_punish.add(subtitle.blocks[index])
                     break
+    for block in blocks_to_punish:
+        block.regex_matches += 1
 
     if subtitle.blocks[0].start_time < timedelta(seconds=1):
         subtitle.blocks[0].regex_matches += 1
