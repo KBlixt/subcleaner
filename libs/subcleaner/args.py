@@ -1,5 +1,5 @@
 import logging
-from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import ArgumentParser
 import glob
 from pathlib import Path
 from typing import Optional, List

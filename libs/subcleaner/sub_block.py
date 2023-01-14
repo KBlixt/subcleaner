@@ -13,6 +13,7 @@ class SubBlock(object):
     start_time: datetime.timedelta
     end_time: datetime.timedelta
     regex_matches = 0
+    styling_elements = []
 
     def __init__(self, block_content: str):
         rows = block_content.strip().split("\n")
