@@ -1,3 +1,4 @@
+import datetime
 import re
 from typing import List, Dict
 
@@ -17,6 +18,14 @@ def run_regex(subtitle: Subtitle) -> None:
 
         _run_regex_on_block(block, regex_lists.get_purge_regex(subtitle.language), 3)
         _run_regex_on_block(block, regex_lists.get_warning_regex(subtitle.language), 1)
+
+
+        if block.end_time - block.start_time < datetime.timedelta(milliseconds=250):
+            block.regex_matches += 1
+
+        if block.end_time - block.start_time < datetime.timedelta(milliseconds=100):
+            block.regex_matches += 1
+
 
         if block.regex_matches == 0:
             block.regex_matches = -1
@@ -133,48 +142,54 @@ def find_ads(subtitle: Subtitle) -> None:
             subtitle.warning_blocks.append(block)
 
     chain: List[SubBlock] = []
+    identicial_count = 0
     for i in range(0, len(subtitle.blocks)):
         block = subtitle.blocks[i]
+
+        if block.content == "The":
+            print(block)
 
         link: bool = False
         if i < len(subtitle.blocks)-1:
             post_block = subtitle.blocks[i + 1]
-            if is_link(post_block.content, block.content):
+            if is_link(post_block, block):
                 link = True
+            if post_block.content == block.content:
+                identicial_count += 1
         if i > 0:
             pre_block = subtitle.blocks[i - 1]
-            if is_link(pre_block.content, block.content):
+            if is_link(pre_block, block):
                 link = True
+            if pre_block.content == block.content and not link:
+                identicial_count += 1
 
         if not link:
-            if len(chain) > 3:
+            if len(chain) > 2 + identicial_count or any(block in subtitle.ad_blocks for block in chain):
                 for chain_block in chain:
                     if chain_block in subtitle.warning_blocks:
                         subtitle.warning_blocks.remove(chain_block)
-                    subtitle.ad_blocks.append(chain_block)
+                    if chain_block not in subtitle.ad_blocks:
+                        subtitle.ad_blocks.append(chain_block)
             chain.clear()
             continue
-
-        if block not in subtitle.ad_blocks:
-            chain.append(block)
-            continue
-
-        for chain_block in chain:
-            if chain_block in subtitle.warning_blocks:
-                subtitle.warning_blocks.remove(chain_block)
-            subtitle.ad_blocks.append(chain_block)
-        chain.clear()
+        chain.append(block)
 
     subtitle.dedupe_warning_blocks()
 
 
-def is_link(s1: str, s2: str) -> bool:
-    if len(s1) + 1 == len(s2):
-        if s2.startswith(s1) or s2.endswith(s1):
+def is_link(block: SubBlock, post_block: SubBlock) -> bool:
+    if block.start_time > post_block.start_time:
+        block, post_block = post_block, block
+    if post_block.start_time - block.end_time > timedelta(milliseconds=500):
+        return False
+    if len(block.content) + 1 == len(post_block.content):
+        if post_block.content.startswith(block.content) or post_block.content.endswith(block.content):
             return True
-    elif len(s1) == 1 + len(s2):
-        if s1.startswith(s2) or s1.endswith(s2):
+    elif len(block.content) == 1 + len(post_block.content):
+        if block.content.startswith(post_block.content) or block.content.endswith(post_block.content):
             return True
+    elif block.content == post_block.content:
+        return True
     return False
 
 

@@ -38,6 +38,9 @@ class SubBlock(object):
             self.content = "\n".join(rows[2:]).strip()
         else:
             self.content = ""
+        self.content = self.content.replace("</br>", "\n")
+
+
 
     def equal_content(self, block: "SubBlock") -> bool:
         t = re.sub("[\\s.,:_-]", "", self.content)
