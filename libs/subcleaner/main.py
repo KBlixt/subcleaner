@@ -5,7 +5,7 @@ from .subtitle import Subtitle, ParsingException, FileContentException
 from libs.subcleaner import cleaner, report_generator, languages
 from .settings import args, config
 
-logger = logging.getLogger("main")
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 files_handled: List[str] = []
@@ -37,7 +37,7 @@ def clean_file(subtitle_file: Path) -> None:
         logger.error(f"subcleaner was unable to decode the file. reason:")
         logger.error(e)
         return
-    if len(subtitle.blocks) == 0:
+    if not subtitle:
         logger.warning("Subtitle file is empty.")
         return
     logger.info(f"now cleaning subtitle: {subtitle.short_path}")

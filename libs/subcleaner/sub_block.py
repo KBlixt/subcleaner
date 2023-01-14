@@ -2,7 +2,7 @@ import datetime
 import logging
 import re
 
-logger = logging.getLogger("sub_block")
+logger = logging.getLogger(__name__)
 
 
 class SubBlock:

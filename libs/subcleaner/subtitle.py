@@ -8,7 +8,7 @@ from .sub_block import SubBlock, ParsingException
 from libs import langdetect
 from pathlib import Path
 
-logger = logging.getLogger("subtitle")
+logger = logging.getLogger(__name__)
 
 
 class Subtitle:

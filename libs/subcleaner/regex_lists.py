@@ -5,7 +5,7 @@ from typing import List, Dict
 from libs.subcleaner.settings import config
 import logging
 
-logger = logging.getLogger("regex")
+logger = logging.getLogger(__name__)
 
 global_profiles: List["GlobalProfile"] = []
 purge_regex: Dict[str, List[str]] = {}

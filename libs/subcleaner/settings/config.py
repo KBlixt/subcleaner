@@ -6,7 +6,7 @@ from typing import Optional
 import libs
 from libs.subcleaner import languages
 
-logger = logging.getLogger("config")
+logger = logging.getLogger(__name__)
 
 home_dir = Path(libs.__file__).parent.parent
 try:
@@ -62,7 +62,7 @@ relative_base = relative_base.resolve()
 fix_overlaps = cfg['SETTINGS'].getboolean("fix_overlaps", True)
 
 default_language = cfg['SETTINGS'].get("default_language", "")
-if default_language in ["blank", "Blank", ""]:
+if default_language in ["blank", "Blank", "", "empty", "Empty"]:
     default_language = None
 if default_language:
     if not languages.is_language(default_language):
