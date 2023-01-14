@@ -161,6 +161,7 @@ def find_ads(subtitle: Subtitle) -> None:
                 for chain_block in chain:
                     subtitle.ad(chain_block)
             chain.clear()
+            identical_count = 0
             continue
         chain.append(block)
 
