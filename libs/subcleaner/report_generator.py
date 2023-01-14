@@ -1,6 +1,6 @@
-from typing import Optional, List, Set
+from typing import Set
 
-from libs.subcleaner import config, args
+from libs.subcleaner.settings import args, config
 from libs.subcleaner.sub_block import SubBlock
 from libs.subcleaner.subtitle import Subtitle
 

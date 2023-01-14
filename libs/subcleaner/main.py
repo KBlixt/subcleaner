@@ -3,8 +3,7 @@ import logging
 from typing import List
 from .subtitle import Subtitle, ParsingException, SubtitleContentException
 from libs.subcleaner import cleaner, report_generator
-from . import args
-from . import config
+from .settings import args, config
 
 logger = logging.getLogger("main")
 logger.setLevel(logging.INFO)
@@ -43,7 +42,6 @@ def clean_file(subtitle_file: Path) -> None:
         return
     logger.info(f"now cleaning subtitle: {subtitle.short_path}")
 
-    cleaner.run_regex(subtitle)
     cleaner.find_ads(subtitle)
     cleaner.remove_ads(subtitle)
     if config.fix_overlaps:
@@ -56,8 +54,7 @@ def clean_file(subtitle_file: Path) -> None:
         return
 
     files_handled.append(subtitle_file.name)
-    v = report_generator.generate_report(subtitle)
-    logger.info(f"Done. Cleaning report:\n{v}\n")
+    logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")
 
     if args.dry_run:
         logger.warning("dry run: nothing was altered.")

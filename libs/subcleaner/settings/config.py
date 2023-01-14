@@ -1,11 +1,10 @@
+import logging
 from configparser import ConfigParser
 from pathlib import Path
 from typing import Optional
 
 import libs
 from libs.subcleaner import languages
-
-import logging
 
 logger = logging.getLogger("config")
 
@@ -18,8 +17,6 @@ except ValueError:
 regex_dir = home_dir.joinpath("regex")
 default_regex_dir = regex_dir.joinpath("default")
 script_file = home_dir.joinpath('subcleaner.py')
-
-languages.load_language_data()
 
 log_file: Path
 use_default_regex: bool

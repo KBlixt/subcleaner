@@ -2,7 +2,7 @@ import configparser
 from pathlib import Path
 from typing import List, Dict
 
-from libs.subcleaner import config
+from libs.subcleaner.settings import config
 import logging
 
 logger = logging.getLogger("regex")

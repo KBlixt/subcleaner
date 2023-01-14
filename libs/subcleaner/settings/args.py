@@ -4,7 +4,8 @@ import glob
 from pathlib import Path
 from typing import Optional, List
 
-from libs.subcleaner import config, languages
+from libs.subcleaner import languages
+from . import config
 
 logger = logging.getLogger("args")
 

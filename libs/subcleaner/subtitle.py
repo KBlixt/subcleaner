@@ -1,8 +1,9 @@
 import logging
 import re
-from typing import List, Set, Optional
+from typing import List, Set
 
-from . import util, args, config, languages
+from . import languages
+from .settings import args, config
 from .sub_block import SubBlock, ParsingException
 from libs import langdetect
 from pathlib import Path
@@ -24,7 +25,7 @@ class Subtitle:
         self.ad_blocks = set()
         self.warning_blocks = set()
 
-        file_content = util.read_file(self.file)
+        file_content = read_file(self.file)
         try:
             self._parse_file_content(file_content)
         except ParsingException as e:
@@ -161,3 +162,16 @@ class SubtitleContentException(Exception):
 
     def __str__(self) -> str:
         return f"File {self.subtitle_file} is empty."
+
+
+def read_file(file: Path) -> str:
+    file_content: str
+
+    try:
+        with file.open("r", encoding="utf-8") as opened_file:
+            file_content = opened_file.read()
+    except UnicodeDecodeError:
+        with file.open("r", encoding="cp1252") as opened_file:
+            file_content = opened_file.read()
+
+    return file_content

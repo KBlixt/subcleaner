@@ -1,7 +1,8 @@
 import json
+from pathlib import Path
 from typing import Optional, List, Dict
 
-from libs.subcleaner import config
+languages_json_file = Path(__file__).parent.joinpath("languages.json")
 
 _languages: List[Dict[str, str]]
 _language_names: List[str] = []
@@ -10,7 +11,7 @@ _language_codes_3: List[str] = []
 
 
 def load_language_data() -> None:
-    with open(config.home_dir.joinpath("libs/subcleaner/languages.json"), encoding="UTF-8") as json_file:
+    with open(languages_json_file, encoding="UTF-8") as json_file:
         global _languages
         _languages = json.load(json_file)
         for language in _languages:
@@ -47,3 +48,6 @@ def get_2letter_code(lang: str) -> Optional[str]:
             if "alpha_2" in language:
                 return language["alpha_2"]
             return None
+
+
+load_language_data()
