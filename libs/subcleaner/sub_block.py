@@ -9,6 +9,7 @@ logger = logging.getLogger("sub_block")
 
 class SubBlock(object):
     original_index: int
+    current_index: int
     content: str
     start_time: datetime.timedelta
     end_time: datetime.timedelta
@@ -39,6 +40,7 @@ class SubBlock(object):
         else:
             self.content = ""
         self.content = self.content.replace("</br>", "\n")
+        self.current_index = self.original_index
 
 
 

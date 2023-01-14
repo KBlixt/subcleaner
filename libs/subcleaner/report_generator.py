@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, List, Set
 
 from libs.subcleaner import config, args
+from libs.subcleaner.sub_block import SubBlock
 from libs.subcleaner.subtitle import Subtitle
 
 _report_base = "          | "
@@ -13,10 +14,10 @@ def generate_report(subtitle: Subtitle) -> str:
 
     if subtitle.ad_blocks:
         _add("")
-        _add(_deleted_card(subtitle), " " * 4)
+        _add(_deleted_card(subtitle.ad_blocks), " " * 4)
     if subtitle.warning_blocks and not args.errors_only:
         _add("")
-        _add(_warning_card(subtitle), " " * 40)
+        _add(_warning_card(subtitle.warning_blocks), " " * 40)
         _add("")
         _add("To delete all remaining warnings run:")
         _add(f"python3 '{config.script_file}' '{subtitle.short_path}' -d {' '.join(subtitle.get_warning_indexes())}")
@@ -36,19 +37,23 @@ def _reset() -> None:
     _report = ""
 
 
-def _deleted_card(subtitle: Subtitle) -> str:
+def _deleted_card(ad_blocks: Set[SubBlock]) -> str:
+    ad_blocks_list = list(ad_blocks)
+    ad_blocks_list.sort(key=lambda b: b.original_index)
     card = "[---------Removed Blocks----------]\n"
-    for block in subtitle.ad_blocks:
+    for block in ad_blocks_list:
         card += f"{block.original_index}\n"
         card += f"{block}\n\n"
     card = card[:-1] + "[---------------------------------]"
     return card
 
 
-def _warning_card(subtitle: Subtitle) -> str:
+def _warning_card(warning_blocks: Set[SubBlock]) -> str:
+    warning_blocks_list = list(warning_blocks)
+    warning_blocks_list.sort(key=lambda b: b.original_index)
     card = "[---------Warning Blocks----------]\n"
-    for block in subtitle.warning_blocks:
-        card += f"{subtitle.index_of(block)}\n"
+    for block in warning_blocks_list:
+        card += f"{block.current_index}\n"
         card += f"{block}\n\n"
     card = card[:-1] + "[---------------------------------]"
     return card

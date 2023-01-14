@@ -75,10 +75,10 @@ def find_ads(subtitle: Subtitle) -> None:
         block: SubBlock = subtitle.blocks[index]
 
         if block.regex_matches >= 3:
-            subtitle.ad_blocks.append(block)
+            subtitle.ad(block)
             continue
         elif block.regex_matches == 2:
-            subtitle.warning_blocks.append(block)
+            subtitle.warn(block)
 
         pre_block: SubBlock = subtitle.blocks[max(index - 1, 0)]
         post_block: SubBlock = subtitle.blocks[min(index + 1, len(subtitle.blocks) - 1)]
@@ -87,67 +87,56 @@ def find_ads(subtitle: Subtitle) -> None:
             if post_block.regex_matches >= 3:
                 if (post_block.start_time - block.end_time) < timedelta(seconds=1):
                     if block in subtitle.warning_blocks:
-                        subtitle.ad_blocks.append(block)
-                        subtitle.warning_blocks.remove(block)
+                        subtitle.ad(block)
                     else:
-                        subtitle.warning_blocks.append(block)
+                        subtitle.warn(block)
                 else:
-                    subtitle.warning_blocks.append(block)
+                    subtitle.warn(block)
             continue
 
         if index == len(subtitle.blocks) - 1:
             if pre_block.regex_matches >= 3:
                 if (block.start_time - pre_block.end_time) < timedelta(seconds=1):
                     if block in subtitle.warning_blocks:
-                        subtitle.ad_blocks.append(block)
-                        subtitle.warning_blocks.remove(block)
+                        subtitle.ad(block)
                     else:
-                        subtitle.warning_blocks.append(block)
+                        subtitle.warn(block)
                 else:
-                    subtitle.warning_blocks.append(block)
+                    subtitle.warn(block)
             continue
 
         if pre_block.regex_matches >= 3 and post_block.regex_matches >= 3:
             if (post_block.start_time - block.end_time) < timedelta(seconds=1) and \
                     (block.start_time - pre_block.end_time) < timedelta(seconds=1):
-                subtitle.ad_blocks.append(block)
+                subtitle.ad(block)
                 continue
             if block.regex_matches == 2:
-                subtitle.ad_blocks.append(block)
+                subtitle.ad(block)
                 continue
             else:
-                subtitle.warning_blocks.append(block)
+                subtitle.warn(block)
                 continue
 
-    for ad_block in subtitle.ad_blocks:
+    for ad_block in list(subtitle.ad_blocks):
         for block in subtitle.blocks:
             if block == ad_block:
                 continue
-            if block in subtitle.ad_blocks:
-                continue
             if not block.equal_content(ad_block):
                 continue
-            if block in subtitle.warning_blocks:
-                subtitle.warning_blocks.remove(block)
-            subtitle.ad_blocks.append(block)
+            subtitle.ad(block)
 
-    for warning_block in subtitle.warning_blocks:
+    for warning_block in list(subtitle.warning_blocks):
         for block in subtitle.blocks:
             if block == warning_block:
                 continue
-            if block in subtitle.warning_blocks:
-                continue
             if not block.equal_content(warning_block):
                 continue
-            subtitle.warning_blocks.append(block)
+            subtitle.warn(block)
 
     chain: List[SubBlock] = []
-    identicial_count = 0
+    identical_count = 0
     for i in range(0, len(subtitle.blocks)):
         block = subtitle.blocks[i]
-
-        if block.content == "The":
-            print(block)
 
         link: bool = False
         if i < len(subtitle.blocks)-1:
@@ -155,26 +144,21 @@ def find_ads(subtitle: Subtitle) -> None:
             if is_link(post_block, block):
                 link = True
             if post_block.content == block.content:
-                identicial_count += 1
+                identical_count += 1
         if i > 0:
             pre_block = subtitle.blocks[i - 1]
             if is_link(pre_block, block):
                 link = True
             if pre_block.content == block.content and not link:
-                identicial_count += 1
+                identical_count += 1
 
         if not link:
-            if len(chain) > 2 + identicial_count or any(block in subtitle.ad_blocks for block in chain):
+            if len(chain) > 2 + identical_count or any(block in subtitle.ad_blocks for block in chain):
                 for chain_block in chain:
-                    if chain_block in subtitle.warning_blocks:
-                        subtitle.warning_blocks.remove(chain_block)
-                    if chain_block not in subtitle.ad_blocks:
-                        subtitle.ad_blocks.append(chain_block)
+                    subtitle.ad(chain_block)
             chain.clear()
             continue
         chain.append(block)
-
-    subtitle.dedupe_warning_blocks()
 
 
 def is_link(block: SubBlock, post_block: SubBlock) -> bool:
@@ -195,22 +179,18 @@ def is_link(block: SubBlock, post_block: SubBlock) -> bool:
 
 def remove_ads(subtitle: Subtitle):
     if args.sensitive and len(subtitle.blocks) > 1:
-        if subtitle.blocks[0] not in subtitle.warning_blocks and subtitle.blocks[0] not in subtitle.ad_blocks:
-            subtitle.warning_blocks.append(subtitle.blocks[0])
-        if subtitle.blocks[-1] not in subtitle.warning_blocks and subtitle.blocks[-1] not in subtitle.ad_blocks:
-            subtitle.warning_blocks.append(subtitle.blocks[-1])
+        subtitle.warn(subtitle.blocks[0])
+        subtitle.warn(subtitle.blocks[-1])
+
         for i in range(1, len(subtitle.blocks)-1):
             prev_block = subtitle.blocks[i - 1]
             block = subtitle.blocks[i]
             next_block = subtitle.blocks[i + 1]
             if prev_block in subtitle.ad_blocks or next_block in subtitle.ad_blocks:
-                if block not in subtitle.warning_blocks and block not in subtitle.ad_blocks:
-                    subtitle.warning_blocks.append(block)
+                subtitle.warn(block)
     for block in subtitle.ad_blocks:
         subtitle.blocks.remove(block)
-
-    subtitle.ad_blocks.sort(key=lambda b: b.original_index)
-    subtitle.warning_blocks.sort(key=lambda b: b.original_index)
+    subtitle.reindex()
 
 
 def fix_overlap(subtitle: Subtitle) -> None:

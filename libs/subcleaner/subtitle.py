@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Optional, List
+from typing import Optional, List, Set
 
 from . import util, args, config, languages
 from .sub_block import SubBlock, ParsingException
@@ -12,8 +12,8 @@ logger = logging.getLogger("subtitle")
 
 class Subtitle(object):
     blocks: List[SubBlock]
-    ad_blocks: List[SubBlock]
-    warning_blocks: List[SubBlock]
+    ad_blocks: Set[SubBlock]
+    warning_blocks: Set[SubBlock]
     language: Optional[str]
     file: Path
     short_path: Path
@@ -21,8 +21,8 @@ class Subtitle(object):
     def __init__(self, subtitle_file: Path) -> None:
         self.file = subtitle_file
         self.blocks = []
-        self.ad_blocks = []
-        self.warning_blocks = []
+        self.ad_blocks = set()
+        self.warning_blocks = set()
 
         file_content = util.read_file(self.file)
         try:
@@ -46,6 +46,17 @@ class Subtitle(object):
 
         if args.destroy_list:
             self.mark_blocks_for_deletion(args.destroy_list)
+
+    def warn(self, block: SubBlock):
+        if block not in self.ad_blocks:
+            self.warning_blocks.add(block)
+
+    def ad(self, block: SubBlock):
+        try:
+            self.warning_blocks.remove(block)
+        except KeyError:
+            pass
+        self.ad_blocks.add(block)
 
     def _parse_file_content(self, file_content: str) -> None:
         file_content = re.sub(r'\n\s*\n', '\n', file_content)
@@ -125,8 +136,11 @@ class Subtitle(object):
     def index_of(self, block: SubBlock) -> int:
         return self.blocks.index(block) + 1
 
-    def dedupe_warning_blocks(self) -> None:
-        self.warning_blocks[:] = [block for block in self.warning_blocks if block not in self.ad_blocks]
+    def reindex(self):
+        index = 1
+        for block in self.blocks:
+            block.current_index = index
+            index += 1
 
     def __str__(self) -> str:
         return str(self.file)
