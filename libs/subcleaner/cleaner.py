@@ -19,13 +19,11 @@ def run_regex(subtitle: Subtitle) -> None:
         _run_regex_on_block(block, regex_lists.get_purge_regex(subtitle.language), 3)
         _run_regex_on_block(block, regex_lists.get_warning_regex(subtitle.language), 1)
 
-
         if block.end_time - block.start_time < datetime.timedelta(milliseconds=250):
             block.regex_matches += 1
 
         if block.end_time - block.start_time < datetime.timedelta(milliseconds=100):
             block.regex_matches += 1
-
 
         if block.regex_matches == 0:
             block.regex_matches = -1

@@ -14,7 +14,6 @@ class SubBlock(object):
     start_time: datetime.timedelta
     end_time: datetime.timedelta
     regex_matches = 0
-    styling_elements = []
 
     def __init__(self, block_content: str):
         rows = block_content.strip().split("\n")
@@ -41,8 +40,6 @@ class SubBlock(object):
             self.content = ""
         self.content = self.content.replace("</br>", "\n")
         self.current_index = self.original_index
-
-
 
     def equal_content(self, block: "SubBlock") -> bool:
         t = re.sub("[\\s.,:_-]", "", self.content)

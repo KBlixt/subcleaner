@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Optional, List, Set
+from typing import List, Set
 
 from . import util, args, config, languages
 from .sub_block import SubBlock, ParsingException
@@ -14,7 +14,7 @@ class Subtitle(object):
     blocks: List[SubBlock]
     ad_blocks: Set[SubBlock]
     warning_blocks: Set[SubBlock]
-    language: Optional[str]
+    language: str
     file: Path
     short_path: Path
 
@@ -38,9 +38,11 @@ class Subtitle(object):
         if not self:
             raise SubtitleContentException(self.file)
 
-        self.language = args.language
-        if not self.language:
+        if args.language:
+            self.language = args.language
+        else:
             self.determine_language()
+
         if not self.language_is_correct():
             logger.warning(f"the language within the file does not match the file label: '{self.language}'")
 
@@ -119,22 +121,17 @@ class Subtitle(object):
 
     def to_content(self) -> str:
         content = ""
-        index = 1
         for block in self.blocks:
-            content += f"{index}\n" \
+            content += f"{block.current_index}\n" \
                        f"{block}\n" \
                        f"\n"
-            index += 1
         return content[:-1]
 
     def get_warning_indexes(self) -> List[str]:
         l: List[str] = []
         for block in self.warning_blocks:
-            l.append(str(self.index_of(block)))
+            l.append(str(block.current_index))
         return l
-
-    def index_of(self, block: SubBlock) -> int:
-        return self.blocks.index(block) + 1
 
     def reindex(self):
         index = 1
