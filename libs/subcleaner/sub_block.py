@@ -7,7 +7,7 @@ from . import util
 logger = logging.getLogger("sub_block")
 
 
-class SubBlock(object):
+class SubBlock:
     original_index: int
     current_index: int
     content: str

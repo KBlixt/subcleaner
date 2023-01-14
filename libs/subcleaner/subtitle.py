@@ -10,7 +10,7 @@ from pathlib import Path
 logger = logging.getLogger("subtitle")
 
 
-class Subtitle(object):
+class Subtitle:
     blocks: List[SubBlock]
     ad_blocks: Set[SubBlock]
     warning_blocks: Set[SubBlock]
