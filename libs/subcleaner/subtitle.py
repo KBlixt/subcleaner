@@ -1,30 +1,31 @@
 import logging
 import re
-from typing import Optional, List
+from typing import List, Set
 
-from . import util, args, config, languages
+from . import languages
+from .settings import args, config
 from .sub_block import SubBlock, ParsingException
 from libs import langdetect
 from pathlib import Path
 
-logger = logging.getLogger("subtitle")
+logger = logging.getLogger(__name__)
 
 
-class Subtitle(object):
+class Subtitle:
     blocks: List[SubBlock]
-    ad_blocks: List[SubBlock]
-    warning_blocks: List[SubBlock]
-    language: Optional[str]
+    ad_blocks: Set[SubBlock]
+    warning_blocks: Set[SubBlock]
+    language: str
     file: Path
     short_path: Path
 
     def __init__(self, subtitle_file: Path) -> None:
         self.file = subtitle_file
         self.blocks = []
-        self.ad_blocks = []
-        self.warning_blocks = []
+        self.ad_blocks = set()
+        self.warning_blocks = set()
 
-        file_content = util.read_file(self.file)
+        file_content = read_file(self.file)
         try:
             self._parse_file_content(file_content)
         except ParsingException as e:
@@ -36,19 +37,33 @@ class Subtitle(object):
             self.short_path = self.file
 
         if not self:
-            raise SubtitleContentException(self.file)
+            raise FileContentException(self.file)
 
-        self.language = args.language
-        if not self.language:
+        if args.language:
+            self.language = args.language
+        else:
             self.determine_language()
+
         if not self.language_is_correct():
             logger.warning(f"the language within the file does not match the file label: '{self.language}'")
 
         if args.destroy_list:
             self.mark_blocks_for_deletion(args.destroy_list)
 
+    def warn(self, block: SubBlock):
+        if block not in self.ad_blocks:
+            self.warning_blocks.add(block)
+
+    def ad(self, block: SubBlock):
+        try:
+            self.warning_blocks.remove(block)
+        except KeyError:
+            pass
+        self.ad_blocks.add(block)
+
     def _parse_file_content(self, file_content: str) -> None:
         file_content = re.sub(r'\n\s*\n', '\n', file_content)
+        file_content = file_content.replace("—", "--")
         self._breakup_block(file_content.split("\n"))
 
     def _breakup_block(self, raw_blocks: [str]) -> None:
@@ -91,7 +106,7 @@ class Subtitle(object):
 
         self.language = "und"
 
-        for suffix in self.file.suffixes[-3:-1]:
+        for suffix in self.file.suffixes[max(-3, -len(self.file.suffixes)): -1]:
             parsed_lang = suffix.replace(":", "-").replace("_", "-").split("-")[0][1:]
             if languages.is_language(parsed_lang):
                 self.language = parsed_lang
@@ -108,25 +123,23 @@ class Subtitle(object):
 
     def to_content(self) -> str:
         content = ""
-        index = 1
         for block in self.blocks:
-            content += f"{index}\n" \
+            content += f"{block.current_index}\n" \
                        f"{block}\n" \
                        f"\n"
-            index += 1
         return content[:-1]
 
     def get_warning_indexes(self) -> List[str]:
         l: List[str] = []
         for block in self.warning_blocks:
-            l.append(str(self.index_of(block)))
+            l.append(str(block.current_index))
         return l
 
-    def index_of(self, block: SubBlock) -> int:
-        return self.blocks.index(block) + 1
-
-    def dedupe_warning_blocks(self) -> None:
-        self.warning_blocks[:] = [block for block in self.warning_blocks if block not in self.ad_blocks]
+    def reindex(self):
+        index = 1
+        for block in self.blocks:
+            block.current_index = index
+            index += 1
 
     def __str__(self) -> str:
         return str(self.file)
@@ -141,7 +154,7 @@ class Subtitle(object):
         return False
 
 
-class SubtitleContentException(Exception):
+class FileContentException(Exception):
     subtitle_file: str
 
     def __init__(self, subtitle_file):
@@ -149,3 +162,16 @@ class SubtitleContentException(Exception):
 
     def __str__(self) -> str:
         return f"File {self.subtitle_file} is empty."
+
+
+def read_file(file: Path) -> str:
+    file_content: str
+
+    try:
+        with file.open("r", encoding="utf-8") as opened_file:
+            file_content = opened_file.read()
+    except UnicodeDecodeError:
+        with file.open("r", encoding="cp1252") as opened_file:
+            file_content = opened_file.read()
+
+    return file_content

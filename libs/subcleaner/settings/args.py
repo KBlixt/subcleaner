@@ -1,12 +1,13 @@
 import logging
-from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import ArgumentParser
 import glob
 from pathlib import Path
 from typing import Optional, List
 
-from libs.subcleaner import config, languages
+from libs.subcleaner import languages
+from . import config
 
-logger = logging.getLogger("args")
+logger = logging.getLogger(__name__)
 
 parser = ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
                                     "Can also check that the subtitle language match the file name language code. ")

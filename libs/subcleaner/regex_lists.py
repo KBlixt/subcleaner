@@ -2,10 +2,10 @@ import configparser
 from pathlib import Path
 from typing import List, Dict
 
-from libs.subcleaner import config
+from libs.subcleaner.settings import config
 import logging
 
-logger = logging.getLogger("regex")
+logger = logging.getLogger(__name__)
 
 global_profiles: List["GlobalProfile"] = []
 purge_regex: Dict[str, List[str]] = {}

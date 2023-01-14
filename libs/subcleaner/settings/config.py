@@ -1,3 +1,4 @@
+import logging
 from configparser import ConfigParser
 from pathlib import Path
 from typing import Optional
@@ -5,9 +6,7 @@ from typing import Optional
 import libs
 from libs.subcleaner import languages
 
-import logging
-
-logger = logging.getLogger("config")
+logger = logging.getLogger(__name__)
 
 home_dir = Path(libs.__file__).parent.parent
 try:
@@ -18,8 +17,6 @@ except ValueError:
 regex_dir = home_dir.joinpath("regex")
 default_regex_dir = regex_dir.joinpath("default")
 script_file = home_dir.joinpath('subcleaner.py')
-
-languages.load_language_data()
 
 log_file: Path
 use_default_regex: bool
@@ -65,7 +62,7 @@ relative_base = relative_base.resolve()
 fix_overlaps = cfg['SETTINGS'].getboolean("fix_overlaps", True)
 
 default_language = cfg['SETTINGS'].get("default_language", "")
-if default_language in ["blank", "Blank", ""]:
+if default_language in ["blank", "Blank", "", "empty", "Empty"]:
     default_language = None
 if default_language:
     if not languages.is_language(default_language):

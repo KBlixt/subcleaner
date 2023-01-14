@@ -1,12 +1,11 @@
 from pathlib import Path
 import logging
 from typing import List
-from .subtitle import Subtitle, ParsingException, SubtitleContentException
-from libs.subcleaner import cleaner, report_generator
-from . import args
-from . import config
+from .subtitle import Subtitle, ParsingException, FileContentException
+from libs.subcleaner import cleaner, report_generator, languages
+from .settings import args, config
 
-logger = logging.getLogger("main")
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 files_handled: List[str] = []
@@ -33,17 +32,16 @@ def clean_file(subtitle_file: Path) -> None:
 
     try:
         subtitle = Subtitle(subtitle_file)
-    except (UnicodeDecodeError, ParsingException, SubtitleContentException) as e:
+    except (UnicodeDecodeError, ParsingException, FileContentException) as e:
         logger.info(f"now cleaning subtitle: {subtitle_file}")
         logger.error(f"subcleaner was unable to decode the file. reason:")
         logger.error(e)
         return
-    if len(subtitle.blocks) == 0:
+    if not subtitle:
         logger.warning("Subtitle file is empty.")
         return
     logger.info(f"now cleaning subtitle: {subtitle.short_path}")
 
-    cleaner.run_regex(subtitle)
     cleaner.find_ads(subtitle)
     cleaner.remove_ads(subtitle)
     if config.fix_overlaps:
@@ -56,8 +54,7 @@ def clean_file(subtitle_file: Path) -> None:
         return
 
     files_handled.append(subtitle_file.name)
-    v = report_generator.generate_report(subtitle)
-    logger.info(f"Done. Cleaning report:\n{v}\n")
+    logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")
 
     if args.dry_run:
         logger.warning("dry run: nothing was altered.")
@@ -78,5 +75,7 @@ def clean_directory(directory: Path) -> None:
             clean_file(file)
             continue
 
-        if len(file.suffixes) >= 2 and args.language == file.suffixes[-2][1:3]:
-            clean_file(file)
+        for suffix in file.suffixes[max(-3, -len(file.suffixes)):-1]:
+            parsed_lang = suffix.replace(":", "-").replace("_", "-").split("-")[0][1:]
+            if languages.is_language(parsed_lang) and args.language == parsed_lang:
+                clean_file(file)

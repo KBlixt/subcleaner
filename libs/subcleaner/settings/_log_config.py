@@ -1,7 +1,6 @@
 import logging.handlers
 import sys
-from . import args
-from . import config
+from . import args, config
 
 # formatters
 time_formatter = logging.Formatter("{asctime} - {levelname:>8}: {message}", style="{", datefmt='%Y-%m-%d_%H:%M:%S')
