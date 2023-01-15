@@ -16,13 +16,13 @@ def detect_chain(subtitle: Subtitle) -> None:
             post_block = subtitle.blocks[i + 1]
             if is_link(post_block, block):
                 link = True
-            if post_block.content == block.content:
+            if post_block.equal_content(block):
                 identical_count += 1
         if i > 0:
             pre_block = subtitle.blocks[i - 1]
             if is_link(pre_block, block):
                 link = True
-            if pre_block.content == block.content and not link:
+            if pre_block.equal_content(block) and not link:
                 identical_count += 1
 
         if not link:
