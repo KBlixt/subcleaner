@@ -40,12 +40,12 @@ def is_link(block: SubBlock, post_block: SubBlock) -> bool:
         block, post_block = post_block, block
     if post_block.start_time - block.end_time > timedelta(milliseconds=500):
         return False
-    if len(block.content) + 1 == len(post_block.content):
+    if len(block.content) < len(post_block.content) <= len(block.content) + 2:
         if post_block.content.startswith(block.content) or post_block.content.endswith(block.content):
             return True
-    elif len(block.content) == 1 + len(post_block.content):
+    elif len(post_block.content) < len(block.content) <= len(post_block.content) + 2:
         if block.content.startswith(post_block.content) or block.content.endswith(post_block.content):
             return True
-    elif block.content == post_block.content:
+    elif block.content.strip() == post_block.content.strip():
         return True
     return False
