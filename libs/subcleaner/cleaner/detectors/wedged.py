@@ -5,6 +5,8 @@ from libs.subcleaner.subtitle import Subtitle
 
 
 def detect_wedged(subtitle: Subtitle) -> None:
+    if len(subtitle.blocks) < 3:
+        return
     for index in range(0, len(subtitle.blocks)):
         block: SubBlock = subtitle.blocks[index]
 
