@@ -10,7 +10,6 @@ from . import detectors, punishers
 def find_ads(subtitle: Subtitle) -> None:
 
     punishers.punish_quick_first_block(subtitle)
-    punishers.punish_short_duration(subtitle)
     punishers.punish_regex_matches(subtitle)
 
     for block in subtitle.blocks:
