@@ -168,7 +168,7 @@ def read_file(file: Path) -> str:
     file_content: str
 
     try:
-        with file.open("r", encoding="utf-8") as opened_file:
+        with file.open("r", encoding="utf-8-sig") as opened_file:
             file_content = opened_file.read()
     except UnicodeDecodeError:
         with file.open("r", encoding="cp1252") as opened_file:
