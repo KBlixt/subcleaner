@@ -1,6 +1,6 @@
 import configparser
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from libs.subcleaner.settings import config
 import logging
@@ -8,17 +8,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 global_profiles: List["GlobalProfile"] = []
-purge_regex: Dict[str, List[str]] = {}
-warning_regex: Dict[str, List[str]] = {}
+purge_regex: Dict[str, List[Tuple[str, str]]] = {}
+warning_regex: Dict[str, List[Tuple[str, str]]] = {}
 
 
-def get_purge_regex(language: str):
+def get_purge_regex(language: str) -> List[Tuple[str, str]]:
     if language not in purge_regex:
         _create_language(language)
     return purge_regex[language]
 
 
-def get_warning_regex(language: str):
+def get_warning_regex(language: str) -> List[Tuple[str, str]]:
     if language not in warning_regex:
         _create_language(language)
     return warning_regex[language]
@@ -26,12 +26,12 @@ def get_warning_regex(language: str):
 
 class GlobalProfile:
     excluded_languages: List[str]
-    purge_regex_lines: List[str]
-    warning_regex_lines: List[str]
+    purge_regex_lines: List[Tuple[str, str]]
+    warning_regex_lines: List[Tuple[str, str]]
 
     def __init__(self, parser) -> None:
-        self.purge_regex_lines = list(parser["PURGE_REGEX"].values())
-        self.warning_regex_lines = list(parser["WARNING_REGEX"].values())
+        self.purge_regex_lines = list(parser["PURGE_REGEX"].items())
+        self.warning_regex_lines = list(parser["WARNING_REGEX"].items())
 
         self.excluded_languages = parser["META"].get("excluded_language_codes", "").replace(" ", "").split(",")
         for language in self.excluded_languages:
@@ -60,8 +60,8 @@ def _load_profile(profile_file: Path) -> None:
         for language in languages.split(","):
             if language not in purge_regex:
                 _create_language(language)
-            purge_regex[language] += list(parser["PURGE_REGEX"].values())
-            warning_regex[language] += list(parser["WARNING_REGEX"].values())
+            purge_regex[language] += list(parser["PURGE_REGEX"].items())
+            warning_regex[language] += list(parser["WARNING_REGEX"].items())
 
     except Exception:
         logger.error(f"Incorrectly configured regex language profile: {profile_file.name}")

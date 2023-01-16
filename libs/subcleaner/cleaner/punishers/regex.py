@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import List
+from typing import List, Tuple
 
 from libs.subcleaner import regex_lists
 from libs.subcleaner.sub_block import SubBlock
@@ -13,9 +13,10 @@ def punish_regex_matches(subtitle: Subtitle) -> None:
         _run_regex_on_block(block, regex_lists.get_warning_regex(subtitle.language), 1)
 
 
-def _run_regex_on_block(block: SubBlock, regex_list: List[str], punishment: int) -> None:
+def _run_regex_on_block(block: SubBlock, regex_list: List[Tuple[str, str]], punishment: int) -> None:
     clean_content = " ".join(block.content.replace("-\n", "-").split())
     for regex in regex_list:
-        result = re.findall(regex, clean_content, flags=re.IGNORECASE | re.UNICODE)
+        result = re.findall(regex[1], clean_content, flags=re.IGNORECASE | re.UNICODE)
         if result:
             block.regex_matches += punishment * len(result)
+            block.hints.append(regex[0])

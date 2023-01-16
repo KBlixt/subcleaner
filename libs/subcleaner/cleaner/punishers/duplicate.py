@@ -18,6 +18,7 @@ def punish_clone_blocks(subtitle: Subtitle) -> None:
             continue
         for block in duplicate_list:
             block.regex_matches += 1
+            block.hints.append("similar_content")
 
 
 def move_duplicated(subtitle: Subtitle) -> None:

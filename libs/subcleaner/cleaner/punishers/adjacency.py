@@ -8,12 +8,18 @@ def punish_ad_adjacency(subtitle: Subtitle) -> None:
     blocks_to_punish: Set[SubBlock] = set()
     for index in range(0, len(subtitle.blocks)):
         block = subtitle.blocks[index]
-        if index < 3 or index > len(subtitle.blocks) - 4:
+        if index < 3:
             blocks_to_punish.add(block)
+            block.hints.append("close_to_start")
+            continue
+        if index > len(subtitle.blocks) - 4:
+            blocks_to_punish.add(block)
+            block.hints.append("close_to_end")
             continue
         for compare_block in subtitle.blocks[max(0, index - 15): min(index + 16, len(subtitle.blocks))]:
             if compare_block.regex_matches >= 2 and compare_block != block:
                 blocks_to_punish.add(block)
+                block.hints.append("nearby_ad")
                 break
     for block in blocks_to_punish:
         block.regex_matches += 1
@@ -27,4 +33,5 @@ def punish_ad_adjacency(subtitle: Subtitle) -> None:
                 break
     for block in blocks_to_punish:
         block.regex_matches += 1
+        block.hints.append("adjacent_ad")
     blocks_to_punish.clear()

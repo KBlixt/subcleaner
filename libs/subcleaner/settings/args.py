@@ -66,6 +66,11 @@ sensitive: bool
 parser.add_argument("--sensitive", action="store_true", dest="sensitive",
                     help="Sensitive: logs all blocks adjacent to ads as warnings.")
 
+show_reasons: bool
+parser.add_argument("--show-reasons", action="store_true", dest="show_reasons",
+                    help="Show reasons: when this is enabled each block will be given a list of reasons "
+                         "why they got removed/warned. (debugging tool)")
+
 args = parser.parse_args()
 # check usage:
 
@@ -119,3 +124,4 @@ dry_run = args.dry_run
 errors_only = args.errors_only
 removed_only = args.removed_only
 sensitive = args.sensitive
+show_reasons = args.show_reasons

@@ -43,7 +43,10 @@ def _deleted_card(ad_blocks: Set[SubBlock]) -> str:
     card = "[---------Removed Blocks----------]\n"
     for block in ad_blocks_list:
         card += f"{block.original_index}\n"
-        card += f"{block}\n\n"
+        card += f"{block}\n"
+        if args.show_reasons:
+            card += f"reasons: ({', '.join(block.hints)})\n"
+        card += "\n"
     card = card[:-1] + "[---------------------------------]"
     return card
 
@@ -54,6 +57,9 @@ def _warning_card(warning_blocks: Set[SubBlock]) -> str:
     card = "[---------Warning Blocks----------]\n"
     for block in warning_blocks_list:
         card += f"{block.current_index}\n"
-        card += f"{block}\n\n"
+        card += f"{block}\n"
+        if args.show_reasons:
+            card += f"reasons: ({', '.join(block.hints)})\n"
+        card += "\n"
     card = card[:-1] + "[---------------------------------]"
     return card
