@@ -45,7 +45,7 @@ class GlobalProfile:
             warning_regex[language] += self.warning_regex_lines
 
 
-def _load_profile(profile_file: Path) -> None:
+def _load_profile(profile_file: Path, default: bool = True) -> None:
     parser = configparser.ConfigParser()
 
     try:
@@ -60,8 +60,14 @@ def _load_profile(profile_file: Path) -> None:
         for language in languages.split(","):
             if language not in purge_regex:
                 _create_language(language)
-            purge_regex[language] += list(parser["PURGE_REGEX"].items())
-            warning_regex[language] += list(parser["WARNING_REGEX"].items())
+            for key, value in list(parser["PURGE_REGEX"].items()):
+                if not default:
+                    key = key + "*"
+                purge_regex[language].append((key, value))
+            for key, value in list(parser["WARNING_REGEX"].items()):
+                if not default:
+                    key = key + "*"
+                warning_regex[language].append((key, value))
 
     except Exception:
         logger.error(f"Incorrectly configured regex language profile: {profile_file.name}")
@@ -88,7 +94,7 @@ def _load_regex():
                     _load_profile(profile_file)
                     break
             else:
-                _load_profile(default_profile_file)
+                _load_profile(default_profile_file, default=True)
     for profile_file in config.regex_dir.iterdir():
         if profile_file.is_file() and not profile_file.name.startswith(".") and profile_file.suffix == ".conf":
             for default_profile_file in config.default_regex_dir.iterdir():

@@ -35,6 +35,11 @@ def detect_chain(subtitle: Subtitle) -> None:
             identical_count = 0
             continue
         chain.append(block)
+    if len(chain) > 2 + identical_count or any(block in subtitle.ad_blocks for block in chain):
+        for chain_block in chain:
+            subtitle.ad(chain_block)
+            chain_block.hints.append("chain_block")
+    chain.clear()
 
 
 def is_link(block: SubBlock, post_block: SubBlock) -> bool:
