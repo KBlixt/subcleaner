@@ -1,6 +1,7 @@
 import datetime
 import logging
 import re
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ class SubBlock:
     start_time: datetime.timedelta
     end_time: datetime.timedelta
     regex_matches = 0
-    hints: list[str]
+    hints: List[str]
 
     def __init__(self, block_content: str):
         rows = block_content.strip().split("\n")
