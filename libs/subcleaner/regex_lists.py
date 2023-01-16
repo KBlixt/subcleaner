@@ -29,9 +29,18 @@ class GlobalProfile:
     purge_regex_lines: List[Tuple[str, str]]
     warning_regex_lines: List[Tuple[str, str]]
 
-    def __init__(self, parser) -> None:
-        self.purge_regex_lines = list(parser["PURGE_REGEX"].items())
-        self.warning_regex_lines = list(parser["WARNING_REGEX"].items())
+    def __init__(self, parser, default: bool) -> None:
+        self.purge_regex_lines = []
+        self.warning_regex_lines = []
+
+        for key, value in list(parser["PURGE_REGEX"].items()):
+            if not default:
+                key = key + "*"
+            self.purge_regex_lines.append((key, value))
+        for key, value in list(parser["WARNING_REGEX"].items()):
+            if not default:
+                key = key + "*"
+            self.warning_regex_lines.append((key, value))
 
         self.excluded_languages = parser["META"].get("excluded_language_codes", "").replace(" ", "").split(",")
         for language in self.excluded_languages:
@@ -54,7 +63,7 @@ def _load_profile(profile_file: Path, default: bool = True) -> None:
         languages = parser["META"].get("language_codes", "").replace(" ", "")
 
         if "excluded_language_codes" in parser["META"].keys() or not languages:
-            global_profiles.append(GlobalProfile(parser))
+            global_profiles.append(GlobalProfile(parser, default))
             return
 
         for language in languages.split(","):
