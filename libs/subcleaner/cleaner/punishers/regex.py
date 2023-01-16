@@ -1,4 +1,3 @@
-import datetime
 import re
 from typing import List, Tuple
 
@@ -19,4 +18,5 @@ def _run_regex_on_block(block: SubBlock, regex_list: List[Tuple[str, str]], puni
         result = re.findall(regex[1], clean_content, flags=re.IGNORECASE | re.UNICODE)
         if result:
             block.regex_matches += punishment * len(result)
-            block.hints.append(regex[0])
+            for i in range(0, len(result)):
+                block.hints.append(regex[0])

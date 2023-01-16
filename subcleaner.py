@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-
 from configparser import DuplicateOptionError
 
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 if __name__ == '__main__':
     try:
