@@ -65,6 +65,12 @@ def _load_profile(profile_file: Path, default: bool = True) -> None:
         if "excluded_language_codes" in parser["META"].keys() or not languages:
             global_profiles.append(GlobalProfile(parser, default))
             return
+        if config.use_english_on_all and default and profile_file.name == "english.conf":
+            global_profiles.append(GlobalProfile(parser, default))
+            for language in languages.split(","):
+                if language not in purge_regex:
+                    _create_language(language)
+            return
 
         for language in languages.split(","):
             if language not in purge_regex:

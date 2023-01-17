@@ -68,3 +68,5 @@ if default_language:
     if not languages.is_language(default_language):
         logger.error("Config error: default language code in must a valid ISO:639 language. Exiting")
         exit(1)
+
+use_english_on_all = cfg['SETTINGS'].getboolean("use_english_on_all", True)
