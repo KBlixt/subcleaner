@@ -4,10 +4,9 @@ from typing import Dict, List
 from libs.subcleaner.sub_block import SubBlock
 from libs.subcleaner.subtitle import Subtitle
 
-content_dict: Dict[str, List[SubBlock]] = {}
-
 
 def punish_clone_blocks(subtitle: Subtitle) -> None:
+    content_dict: Dict[str, List[SubBlock]] = {}
     for block in subtitle.blocks:
         content = re.sub("[\\s.,:_-]", "", block.content)
         if content not in content_dict:
