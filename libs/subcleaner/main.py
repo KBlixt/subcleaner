@@ -20,7 +20,7 @@ def main():
         clean_directory(library)
 
     if files_handled == 0:
-        logger.info(f"no srt files found.")
+        logger.error(f"no srt files found.")
 
     logger.info(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
 
