@@ -53,8 +53,8 @@ def clean_file(subtitle_file: Path) -> None:
                      "Nothing was altered.")
         return
 
-    files_handled.append(subtitle_file.name)
     logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")
+    files_handled.append(subtitle_file.name)
 
     if args.dry_run:
         logger.warning("dry run: nothing was altered.")
