@@ -74,6 +74,9 @@ class Subtitle:
                 last_break = i - 1
                 if block.content:
                     self.blocks.append(block)
+        block = SubBlock("\n".join(raw_blocks[last_break:]))
+        if block.content:
+            self.blocks.append(block)
 
     def mark_blocks_for_deletion(self, purge_list: List[int]) -> None:
         for index in purge_list:

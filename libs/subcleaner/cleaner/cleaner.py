@@ -8,14 +8,13 @@ from . import detectors, punishers
 
 
 def find_ads(subtitle: Subtitle) -> None:
-
-    punishers.punish_quick_first_block(subtitle)
     punishers.punish_regex_matches(subtitle)
 
     for block in subtitle.blocks:
         if block.regex_matches == 0:
             block.regex_matches = -1
 
+    punishers.punish_quick_first_block(subtitle)
     punishers.punish_ad_adjacency(subtitle)
     punishers.punish_clone_blocks(subtitle)
 
