@@ -70,3 +70,4 @@ if default_language:
         exit(1)
 
 use_english_on_all = cfg['SETTINGS'].getboolean("use_english_on_all", True)
+require_language_profile = cfg['SETTINGS'].getboolean("require_language_profile", False)

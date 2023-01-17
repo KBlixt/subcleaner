@@ -12,6 +12,10 @@ purge_regex: Dict[str, List[Tuple[str, str]]] = {}
 warning_regex: Dict[str, List[Tuple[str, str]]] = {}
 
 
+def language_has_profile(language: str):
+    return language in purge_regex
+
+
 def get_purge_regex(language: str) -> List[Tuple[str, str]]:
     if language not in purge_regex:
         _create_language(language)
