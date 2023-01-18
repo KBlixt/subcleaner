@@ -40,7 +40,7 @@ def clean_file(subtitle_file: Path) -> None:
     if not subtitle:
         logger.warning("Subtitle file is empty.")
         return
-    if config.require_language_profile and regex_lists.language_has_profile(subtitle.language):
+    if config.require_language_profile and not regex_lists.language_has_profile(subtitle.language):
         logger.warning(f"language '{subtitle.language}' have no regex profile associated with it.")
         logger.warning(f"either create a regex profile for it or disable require_language_profile in the config.")
         return
