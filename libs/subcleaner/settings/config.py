@@ -20,7 +20,7 @@ if home_dir.joinpath("regex").exists():
     for path in home_dir.joinpath("regex").iterdir():
         new_file = regex_dir.joinpath(path.name)
         if not new_file.exists():
-            new_file.write_text(path.read_text())
+            path.rename(new_file)
         path.unlink()
     home_dir.joinpath("regex").rmdir()
 
