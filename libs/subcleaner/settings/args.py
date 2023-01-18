@@ -1,5 +1,5 @@
+import argparse
 import logging
-from argparse import ArgumentParser
 import glob
 from pathlib import Path
 from typing import Optional, List
@@ -9,8 +9,8 @@ from . import config
 
 logger = logging.getLogger(__name__)
 
-parser = ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
-                                    "Can also check that the subtitle language match the file name language code. ")
+parser = argparse.ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
+                                             "Can also check that the subtitle language match the file name language code. ")
 
 subtitles: List[Path]
 parser.add_argument("subtitle", metavar="SUB", type=str, default=list(), nargs="*",
@@ -26,7 +26,7 @@ parser.add_argument("--library", "-r", metavar="LIB", type=str, dest="library", 
 language: Optional[str]
 parser.add_argument("--language", "-l", metavar="LANG", type=str, dest="language", default=None,
                     help="ISO-639 language code. If this argument is set then the script will "
-                         "check that the language of the content matches LANG and report results to log. "
+                         "assume that the SUB's language is LANG regardless of filenames and content. "
                          "code may contain :forced or other \"LANG:<tag>\" but these tags will be ignored")
 
 purge_list: List[int]
@@ -38,37 +38,35 @@ parser.add_argument("--destroy", "-d", type=int, nargs="+", default=list(),
 
 dry_run: bool
 parser.add_argument("--dry-run", "-n", action="store_true", dest="dry_run",
-                    help="Dry run: If flag is set then no files are modified.")
+                    help="Dry run: No files are modified.")
 
 silent: bool
 parser.add_argument("--silent", "-s", action="store_true", dest="silent",
-                    help="Silent: If flag is set then script don't print info messages to console.")
+                    help="Silent: Only print warnings or errors in stdout.")
 
 minimal: bool
 parser.add_argument("--minimal", "-m", action="store_true", dest="minimal",
-                    help="[DEPRECATED] Minimal: If flag is set then script will show less info."
-                         "deprecated, this does nothing at the moment.")
+                    help=argparse.SUPPRESS)
 
 removed_only: bool
 parser.add_argument("--removed", "-a", action="store_true", dest="removed_only",
-                    help="Removed Only: If flag is set then script will only show removed blocks.")
+                    help="Removed Only: Will only show removed blocks in cleaning report.")
 
 errors_only: bool
 parser.add_argument("--errors", "-e", action="store_true", dest="errors_only",
-                    help="Errors: If flag is set then script will show only "
-                         "the errors and will run in --dry-run mode.")
+                    help="Errors: Only print errors and will run in --dry-run mode.")
 
 no_log: bool
 parser.add_argument("--no-log", action="store_true", dest="no_log",
-                    help="No log: If flag is set then nothing is logged.")
+                    help="No log: Nothing is logged to file.")
 
 sensitive: bool
 parser.add_argument("--sensitive", action="store_true", dest="sensitive",
-                    help="Sensitive: logs all blocks adjacent to ads as warnings.")
+                    help="Sensitive: Log all blocks adjacent to ads as warnings.")
 
 explain: bool
 parser.add_argument("--explain", action="store_true", dest="explain",
-                    help="Explain: when this is enabled each block will be given a list of reasons "
+                    help="Explain: Each block will be given a list of reasons "
                          "why they got removed/warned. (debugging tool)")
 
 args = parser.parse_args()

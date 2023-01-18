@@ -14,7 +14,7 @@ try:
 except ValueError:
     pass
 
-regex_dir = home_dir.joinpath("regex")
+regex_dir = home_dir.joinpath("regex_profiles")
 default_regex_dir = regex_dir.joinpath("default")
 script_file = home_dir.joinpath('subcleaner.py')
 

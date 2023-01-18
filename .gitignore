@@ -283,5 +283,5 @@ $RECYCLE.BIN/
 /log/
 /logs/
 *.log*
-/regex/*
+/regex_profiles/
 /databases/
