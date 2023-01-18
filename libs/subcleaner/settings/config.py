@@ -13,8 +13,17 @@ try:
     home_dir = home_dir.relative_to(Path.cwd())
 except ValueError:
     pass
-
 regex_dir = home_dir.joinpath("regex_profiles")
+
+# for migrating old installations:
+if home_dir.joinpath("regex").exists():
+    for path in home_dir.joinpath("regex").iterdir():
+        new_file = regex_dir.joinpath(path.name)
+        if not new_file.exists():
+            new_file.write_text(path.read_text())
+        path.unlink()
+    home_dir.joinpath("regex").rmdir()
+
 default_regex_dir = regex_dir.joinpath("default")
 script_file = home_dir.joinpath('subcleaner.py')
 
