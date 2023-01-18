@@ -2,7 +2,7 @@ from pathlib import Path
 import logging
 from typing import List
 from .subtitle import Subtitle, ParsingException, FileContentException
-from libs.subcleaner import cleaner, report_generator, languages
+from libs.subcleaner import cleaner, report_generator, languages, regex_lists
 from .settings import args, config
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ def main():
         clean_directory(library)
 
     if files_handled == 0:
-        logger.info(f"no srt files found.")
+        logger.error(f"no srt files found.")
 
     logger.info(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
 
@@ -40,6 +40,11 @@ def clean_file(subtitle_file: Path) -> None:
     if not subtitle:
         logger.warning("Subtitle file is empty.")
         return
+    if config.require_language_profile and not regex_lists.language_has_profile(subtitle.language):
+        logger.warning(f"language '{subtitle.language}' have no regex profile associated with it.")
+        logger.warning(f"either create a regex profile for it or disable require_language_profile in the config.")
+        return
+
     logger.info(f"now cleaning subtitle: {subtitle.short_path}")
 
     cleaner.find_ads(subtitle)
