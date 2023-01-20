@@ -49,7 +49,7 @@ class SubBlock:
 
     def __str__(self) -> str:
         string = f"{timedelta_to_time_string(self.start_time)} --> {timedelta_to_time_string(self.end_time)}\n" \
-                 f"{self.content}"
+                 f"{self.content.replace('--', '—')}"
         return string
 
 
