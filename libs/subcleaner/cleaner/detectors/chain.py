@@ -15,15 +15,15 @@ def detect_chain(subtitle: Subtitle) -> None:
         if i < len(subtitle.blocks) - 1:
             post_block = subtitle.blocks[i + 1]
             if is_link(post_block, block):
+                if post_block.equal_content(block):
+                    identical_count += 1
                 link = True
-            if post_block.equal_content(block):
-                identical_count += 1
         if i > 0:
             pre_block = subtitle.blocks[i - 1]
             if is_link(pre_block, block):
+                if pre_block.equal_content(block) and not link:
+                    identical_count += 1
                 link = True
-            if pre_block.equal_content(block) and not link:
-                identical_count += 1
 
         if not link:
             if len(chain) > 2 + identical_count or any(block in subtitle.ad_blocks for block in chain):
@@ -47,6 +47,7 @@ def is_link(block: SubBlock, post_block: SubBlock) -> bool:
         block, post_block = post_block, block
     if post_block.start_time - block.end_time > timedelta(milliseconds=500):
         return False
+
     if len(block.content) < len(post_block.content) <= len(block.content) + 2:
         if post_block.content.startswith(block.content) or post_block.content.endswith(block.content):
             return True
@@ -55,4 +56,5 @@ def is_link(block: SubBlock, post_block: SubBlock) -> bool:
             return True
     elif block.content.strip() == post_block.content.strip():
         return True
+
     return False
