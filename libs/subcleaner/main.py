@@ -23,6 +23,8 @@ def main():
         logger.error(f"no srt files found.")
 
     logger.info(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
+    if args.silent or args.errors_only:
+        print(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
 
 
 def clean_file(subtitle_file: Path) -> None:
