@@ -63,6 +63,7 @@ class ParsingException(Exception):
     def __str__(self) -> str:
         return f"Parsing error at block {self.block_index} in file {self.subtitle_file}."
 
+
 def time_string_to_timedelta(time_string: str) -> datetime.timedelta:
     time = time_string.replace(",", ".").replace(" ", "")
     split = time.split(":")

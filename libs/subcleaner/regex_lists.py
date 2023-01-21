@@ -17,15 +17,15 @@ def language_has_profile(language: str):
 
 
 def get_purge_regex(language: str) -> List[Tuple[str, str]]:
-    if language not in purge_regex:
-        _create_language(language)
-    return purge_regex[language]
+    if language in purge_regex:
+        return purge_regex[language]
+    return purge_regex["no_profile"]
 
 
 def get_warning_regex(language: str) -> List[Tuple[str, str]]:
-    if language not in warning_regex:
-        _create_language(language)
-    return warning_regex[language]
+    if language in warning_regex:
+        return warning_regex[language]
+    return warning_regex["no_profile"]
 
 
 class GlobalProfile:

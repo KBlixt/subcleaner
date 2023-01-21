@@ -55,9 +55,17 @@ def clean_file(subtitle_file: Path) -> None:
         cleaner.fix_overlap(subtitle)
 
     if len(subtitle.blocks) == 0:
+        reasons = subtitle.blocks[0].hints
+        for block in subtitle.blocks[1:]:
+            for hint in reasons:
+                if hint not in block.hints:
+                    reasons.remove(hint)
+
         logger.error("There might be an issue with the regex, "
                      "because everything in the subtitle would have gotten deleted."
                      "Nothing was altered.")
+        if reasons:
+            logger.error("all removed blocks had common reasons: " + ", ".join(reasons))
         return
 
     logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")

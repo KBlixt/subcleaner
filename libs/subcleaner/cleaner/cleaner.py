@@ -34,7 +34,7 @@ def remove_ads(subtitle: Subtitle):
         subtitle.warn(subtitle.blocks[0])
         subtitle.warn(subtitle.blocks[-1])
 
-        for i in range(1, len(subtitle.blocks)-1):
+        for i in range(1, len(subtitle.blocks) - 1):
             prev_block = subtitle.blocks[i - 1]
             block = subtitle.blocks[i]
             next_block = subtitle.blocks[i + 1]
@@ -49,16 +49,17 @@ def fix_overlap(subtitle: Subtitle) -> None:
     if len(subtitle.blocks) < 2:
         return
 
-    margin: timedelta = timedelta(seconds=0.0417)
-    previous_block: SubBlock = subtitle.blocks[0]
+    previous_block = subtitle.blocks[0]
     for block in subtitle.blocks[1:]:
-        block: SubBlock
-        stop_time: timedelta = previous_block.end_time + margin
-        start_time: timedelta = block.start_time - margin
-        overlap: timedelta = stop_time - start_time
-        if overlap.days >= 0 and overlap.microseconds > 3000:
+        if not (previous_block.start_time < block.start_time and previous_block.end_time < block.end_time):
+            previous_block = block
+            continue
+
+        overlap = previous_block.end_time - block.start_time + timedelta(seconds=3 / 30)
+        if timedelta(milliseconds=3) < overlap:
             content_ratio = len(block.content) / (len(block.content) + len(previous_block.content))
             block.start_time += content_ratio * overlap
             previous_block.end_time += (content_ratio - 1) * overlap
+
         previous_block = block
     return
