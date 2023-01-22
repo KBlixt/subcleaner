@@ -69,6 +69,10 @@ parser.add_argument("--explain", action="store_true", dest="explain",
                     help="Explain: Each block will be given a list of reasons "
                          "why they got removed/warned. (debugging tool)")
 
+end_report: bool
+parser.add_argument("--end-report", action="store_true", dest="end_report",
+                    help="End Report: shows a report at the end. (debugging tool)")
+
 args = parser.parse_args()
 # check usage:
 
@@ -123,3 +127,4 @@ errors_only = args.errors_only
 removed_only = args.removed_only
 sensitive = args.sensitive
 explain = args.explain
+end_report = args.end_report

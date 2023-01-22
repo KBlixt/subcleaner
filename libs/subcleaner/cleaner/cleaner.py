@@ -1,10 +1,14 @@
 from datetime import timedelta
-
+from pathlib import Path
+from typing import *
 from libs.subcleaner.subtitle import Subtitle
-from libs.subcleaner.sub_block import SubBlock
 from libs.subcleaner.settings import args
 
 from . import detectors, punishers
+from ..sub_block import SubBlock
+
+ad_blocks: Dict[SubBlock, Set[Path]] = {}
+warning_blocks: Dict[SubBlock, Set[Path]] = {}
 
 
 def find_ads(subtitle: Subtitle) -> None:
@@ -42,6 +46,19 @@ def remove_ads(subtitle: Subtitle):
                 subtitle.warn(block)
     for block in subtitle.ad_blocks:
         subtitle.blocks.remove(block)
+        for e_block in ad_blocks:
+            if e_block.clean_content == block.clean_content:
+                ad_blocks[e_block].add(subtitle.short_path)
+                break
+        else:
+            ad_blocks[block] = {subtitle.short_path}
+    for block in subtitle.warning_blocks:
+        for e_block in warning_blocks:
+            if e_block.clean_content == block.clean_content:
+                warning_blocks[e_block].add(subtitle.short_path)
+                break
+        else:
+            warning_blocks[block] = {subtitle.short_path}
     subtitle.reindex()
 
 

@@ -25,16 +25,17 @@ def detect_wedged(subtitle: Subtitle) -> None:
 
         if index == len(subtitle.blocks) - 1:
             pre_block: SubBlock = subtitle.blocks[index - 1]
-            if pre_block.regex_matches >= 3:
-                if (block.start_time - pre_block.end_time) < timedelta(seconds=1):
-                    if block in subtitle.warning_blocks:
-                        subtitle.ad(block)
-                    else:
-                        subtitle.warn(block)
-                else:
-                    subtitle.warn(block)
-                block.hints.append("wedged_block")
+            if pre_block.regex_matches < 3:
+                continue
+            block.hints.append("wedged_block")
+            if (block.start_time - pre_block.end_time) > timedelta(seconds=1):
+                subtitle.warn(block)
+                continue
 
+            if block in subtitle.warning_blocks:
+                subtitle.ad(block)
+            else:
+                subtitle.warn(block)
             continue
 
         pre_block: SubBlock = subtitle.blocks[index - 1]

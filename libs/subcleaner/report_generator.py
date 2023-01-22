@@ -1,5 +1,7 @@
-from typing import Set
+from pathlib import Path
+from typing import *
 
+from libs.subcleaner.cleaner import cleaner
 from libs.subcleaner.settings import args, config
 from libs.subcleaner.sub_block import SubBlock
 from libs.subcleaner.subtitle import Subtitle
@@ -23,6 +25,16 @@ def generate_report(subtitle: Subtitle) -> str:
         _add(f"python3 '{config.script_file}' '{subtitle.short_path}' -d {' '.join(subtitle.get_warning_indexes())}")
 
     return _report[1:]
+
+def generate_end_report() -> str:
+    _reset()
+    _add("")
+    _add(_end_deleted_card(cleaner.ad_blocks), " " * 4)
+    _add("")
+    _add(_end_warning_card(cleaner.warning_blocks), " " * 40)
+    _add("")
+    return _report[1:]
+
 
 
 def _add(lines: str, spacer: str = "") -> None:
@@ -60,6 +72,41 @@ def _warning_card(warning_blocks: Set[SubBlock]) -> str:
         card += f"{block}\n"
         if args.explain:
             card += f"reasons: ({', '.join(block.hints)})\n"
+        card += "\n"
+    card = card[:-1] + "[---------------------------------]"
+    return card
+
+
+def _end_deleted_card(ad_blocks: Dict[SubBlock, Set[Path]]) -> str:
+
+    ad_blocks_list = list((key, value) for key, value in ad_blocks.items())
+    ad_blocks_list.sort(key=lambda b: len(b[1]))
+    card = "[---------Removed Blocks----------]\n"
+    for block in ad_blocks_list:
+        if len(block[1]) > 4:
+            continue
+        card += f"{block[0].original_index}\n"
+        card += f"{block[0]}\n"
+        if args.explain:
+            card += f"reasons: ({', '.join(block[0].hints)})\n"
+        card += "subtitles: \n" + "\n".join(map(str, block[1])) + "\n"
+        card += "\n"
+    card = card[:-1] + "[---------------------------------]"
+    return card
+
+
+def _end_warning_card(warning_blocks: Dict[SubBlock, Set[Path]]) -> str:
+    ad_blocks_list = list((key, value) for key, value in warning_blocks.items())
+    ad_blocks_list.sort(key=lambda b: len(b[1]), reverse=True)
+    card = "[---------Warning Blocks----------]\n"
+    for block in ad_blocks_list:
+        if len(block[1]) < 2:
+            continue
+        card += f"{block[0].original_index}\n"
+        card += f"{block[0]}\n"
+        if args.explain:
+            card += f"reasons: ({', '.join(block[0].hints)})\n"
+        card += "subtitles: \n" + "\n".join(map(str, block[1])) + "\n"
         card += "\n"
     card = card[:-1] + "[---------------------------------]"
     return card

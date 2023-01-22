@@ -22,6 +22,9 @@ def main():
     if files_handled == 0:
         logger.error(f"no srt files found.")
 
+    if args.end_report:
+        logger.info("\n" + report_generator.generate_end_report())
+
     logger.info(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
     if args.silent or args.errors_only:
         print(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")

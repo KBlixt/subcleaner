@@ -10,6 +10,7 @@ class SubBlock:
     original_index: int
     current_index: int
     content: str
+    clean_content: str
     start_time: datetime.timedelta
     end_time: datetime.timedelta
     regex_matches = 0
@@ -39,6 +40,7 @@ class SubBlock:
         else:
             self.content = ""
         self.content = self.content.replace("</br>", "\n")
+        self.clean_content = re.sub("[\\s.,:_-]", "", self.content)
         self.current_index = self.original_index
         self.hints = []
 
