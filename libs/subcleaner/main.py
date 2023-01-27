@@ -23,7 +23,7 @@ def main():
         logger.error(f"no srt files found.")
 
     if args.end_report:
-        logger.info("\n" + report_generator.generate_end_report())
+        logger.info("end of run report: \n" + report_generator.generate_end_report())
 
     logger.info(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
     if args.silent or args.errors_only:
@@ -52,14 +52,18 @@ def clean_file(subtitle_file: Path) -> None:
 
     logger.info(f"now cleaning subtitle: {subtitle.short_path}")
 
+    if not subtitle.language_is_correct():
+        logger.warning(f"the language within the file does not match language: '{subtitle.language}'")
+
     cleaner.find_ads(subtitle)
     cleaner.remove_ads(subtitle)
     if config.fix_overlaps:
         cleaner.fix_overlap(subtitle)
 
     if len(subtitle.blocks) == 0:
-        reasons = subtitle.blocks[0].hints
-        for block in subtitle.blocks[1:]:
+        l = list(subtitle.ad_blocks)
+        reasons = l[0].hints
+        for block in l[1:]:
             for hint in reasons:
                 if hint not in block.hints:
                     reasons.remove(hint)

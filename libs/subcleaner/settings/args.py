@@ -38,7 +38,7 @@ parser.add_argument("--destroy", "-d", type=int, nargs="+", default=list(),
 
 dry_run: bool
 parser.add_argument("--dry-run", "-n", action="store_true", dest="dry_run",
-                    help="Dry run: No files are modified.")
+                    help="Dry run: No files are modified. (debug)")
 
 silent: bool
 parser.add_argument("--silent", "-s", action="store_true", dest="silent",
@@ -62,16 +62,23 @@ parser.add_argument("--no-log", action="store_true", dest="no_log",
 
 sensitive: bool
 parser.add_argument("--sensitive", action="store_true", dest="sensitive",
-                    help="Sensitive: Log all blocks adjacent to ads as warnings.")
+                    help="Sensitive: Log all blocks adjacent to ads as warnings (debug).")
 
 explain: bool
 parser.add_argument("--explain", action="store_true", dest="explain",
                     help="Explain: Each block will be given a list of reasons "
-                         "why they got removed/warned. (debugging tool)")
+                         "why they got removed/warned. (debug)")
 
 end_report: bool
 parser.add_argument("--end-report", action="store_true", dest="end_report",
-                    help="End Report: shows a report at the end. (debugging tool)")
+                    help="End Report: shows a report at the end displaying unique removed/warning blocks in this run"
+                         "errors are sorted from fewest removed block with same content "
+                         "and warning is sorted from most warned blocks with the same content. (debug)")
+
+debug: bool
+parser.add_argument("--debug", action="store_true", dest="debug",
+                    help="Debug: argument collection that contains arguments: "
+                         "--dry-run, --sensitive, --explain and --end-report")
 
 args = parser.parse_args()
 # check usage:
@@ -122,9 +129,9 @@ if destroy_list and (len(subtitles) != 1 or len(libraries) != 0):
 
 silent = args.silent
 no_log = args.no_log
-dry_run = args.dry_run
+dry_run = args.dry_run or args.debug
 errors_only = args.errors_only
 removed_only = args.removed_only
-sensitive = args.sensitive
-explain = args.explain
-end_report = args.end_report
+sensitive = args.sensitive or args.debug
+explain = args.explain or args.debug
+end_report = args.end_report or args.debug

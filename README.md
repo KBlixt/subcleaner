@@ -45,19 +45,17 @@ mount /opt/subcleaner directly into the container as a volume or install the scr
 the Bazarr config directory.
 
 # Languages:
-Subcleaner needs a regex profile for every language you wish to clean.
-you can leave the regex part in it empty if you want, and it'll use a pretty reliable 
-global regex. 
+a language Don't need a language profile for it to work but it's recommended. the script have a 
+few language profiles included by default:
 
-Included languages:
+Included language profiles:
 - English
 - Swedish
+- Dutch
 - Indonesian
 
-Alternatively you could disable this check in the config. It should work the same as if
-you had set up the empty language profile. 
-
-read the README in the regex_profiles directory for more info.
+If you want to improve the performance in a different language you'll have to make a profile for that language.
+read the README in the regex_profiles directory for more info and guidance.
 
 ### If you make a useful regex profile for a non-default language, PLEASE let me know! 
 I'll review it and add it to the included default profiles. And it'll help out others that use 

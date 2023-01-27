@@ -44,9 +44,6 @@ class Subtitle:
         else:
             self.determine_language()
 
-        if not self.language_is_correct():
-            logger.warning(f"the language within the file does not match the file label: '{self.language}'")
-
         if args.destroy_list:
             self.mark_blocks_for_deletion(args.destroy_list)
 
