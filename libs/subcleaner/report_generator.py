@@ -66,7 +66,7 @@ def _deleted_card(ad_blocks: Set[SubBlock]) -> str:
 def _warning_card(warning_blocks: Set[SubBlock]) -> str:
     warning_blocks_list = list(warning_blocks)
     warning_blocks_list.sort(key=lambda b: b.original_index)
-    card = "[---------All Warning Blocks----------]\n"
+    card = "[---------Warning Blocks----------]\n"
     for block in warning_blocks_list:
         card += f"{block.current_index}\n"
         card += f"{block}\n"
@@ -101,7 +101,7 @@ def _end_deleted_card(ad_blocks: Dict[SubBlock, Set[Path]]) -> str:
 def _end_warning_card(warning_blocks: Dict[SubBlock, Set[Path]]) -> str:
     ad_blocks_list = list((key, value) for key, value in warning_blocks.items())
     ad_blocks_list.sort(key=lambda b: len(b[1]), reverse=True)
-    card = "[---------Warning Blocks----------]\n"
+    card = "[---------All Warning Blocks----------]\n"
     for block in ad_blocks_list:
         if len(block[1]) < 2:
             continue
