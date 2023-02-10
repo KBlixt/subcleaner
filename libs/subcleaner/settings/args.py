@@ -72,7 +72,7 @@ parser.add_argument("--explain", action="store_true", dest="explain",
 end_report: bool
 parser.add_argument("--end-report", action="store_true", dest="end_report",
                     help="End Report: shows a report at the end displaying unique removed/warning blocks in this run"
-                         "errors are sorted from fewest removed block with same content "
+                         "removed blocks with less than 9 warnings are sorted from fewest removed block with same content "
                          "and warning is sorted from most warned blocks with the same content. (debug)")
 
 debug: bool

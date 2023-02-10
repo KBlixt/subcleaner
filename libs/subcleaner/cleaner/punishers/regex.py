@@ -15,7 +15,10 @@ def punish_regex_matches(subtitle: Subtitle) -> None:
 def _run_regex_on_block(block: SubBlock, regex_list: List[Tuple[str, str]], punishment: int) -> None:
     clean_content = " ".join(block.content.replace("-\n", "-").split())
     for regex in regex_list:
-        result = re.findall(regex[1], clean_content, flags=re.IGNORECASE | re.UNICODE)
+        try:
+            result = re.findall(regex[1], clean_content, flags=re.IGNORECASE | re.UNICODE)
+        except re.error as e:
+            raise ValueError(f"regex {regex[0]} is miss configured: {e.msg}")
         if result:
             block.regex_matches += punishment * len(result)
             for i in range(0, len(result)):
