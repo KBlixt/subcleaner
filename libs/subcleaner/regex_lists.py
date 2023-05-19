@@ -62,7 +62,7 @@ def _load_profile(profile_file: Path, default: bool = True) -> None:
     parser = configparser.ConfigParser()
 
     try:
-        parser.read(profile_file)
+        parser.read(profile_file, encoding="utf-8")
 
         languages = parser["META"].get("language_codes", "").replace(" ", "")
 
@@ -88,7 +88,7 @@ def _load_profile(profile_file: Path, default: bool = True) -> None:
                     key = key + "*"
                 warning_regex[language].append((key, value))
 
-    except Exception:
+    except Exception as e:
         logger.error(f"Incorrectly configured regex language profile: {profile_file.name}")
         exit(1)
 

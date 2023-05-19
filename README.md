@@ -50,9 +50,11 @@ few language profiles included by default:
 
 Included language profiles:
 - English
-- Swedish
+- Spanish
+- Portuguese
 - Dutch
 - Indonesian
+- Swedish
 
 If you want to improve the performance in a different language you'll have to make a profile for that language.
 read the README in the regex_profiles directory for more info and guidance.
