@@ -61,7 +61,10 @@ class Subtitle:
     def _parse_file_content(self, file_content: str) -> None:
         file_content = re.sub(r'\n\s*\n', '\n', file_content)
         file_content = file_content.replace("—>", "-->")
-        self._breakup_block(file_content.split("\n"))
+        file_content.strip()
+        file_content_lines = file_content.split("\n")
+        file_content_lines[0] = "1"
+        self._breakup_block(file_content_lines)
 
     def _breakup_block(self, raw_blocks: [str]) -> None:
         last_break = 0
