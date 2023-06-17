@@ -25,9 +25,14 @@ def main():
     if args.end_report:
         logger.info("end of run report: \n" + report_generator.generate_end_report())
 
-    logger.info(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
-    if args.silent or args.errors_only:
-        print(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
+    if len(files_handled) > 0:
+        logger.info(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
+        if args.silent or args.errors_only:
+            print(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
+    else:
+        logger.info("subcleaner didn't find any files to clean!")
+        if args.silent or args.errors_only:
+            print("subcleaner didn't find any files to clean!")
 
 
 def clean_file(subtitle_file: Path) -> None:
