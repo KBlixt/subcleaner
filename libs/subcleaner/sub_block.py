@@ -16,18 +16,33 @@ class SubBlock:
     regex_matches = 0
     hints: List[str]
 
-    def __init__(self, block_content: str):
-        rows = block_content.strip().split("\n")
+    def __init__(self, block_content: str, original_index_actual: int):
+        lines = block_content.strip().split("\n")
 
-        try:
-            self.original_index = int(rows[0])
-        except ValueError:
-            raise ParsingException(rows[0])
-        if len(rows) == 1:
-            raise ParsingException(self.original_index)
+        if self.is_sub_block_header(lines[0]):
+            lines = [""] + lines
+        if not self.is_sub_block_header(lines[1]):
+            raise ParsingException(original_index_actual)
 
+        if lines[0].isnumeric():
+            self.original_index = int(lines[0])
+        else:
+            number = ""
+            for character in lines[0]:
+                if character.isnumeric():
+                    number += character
+                else:
+                    break
+            if number:
+                self.original_index = int(number)
+            else:
+                self.original_index = original_index_actual
+
+        if not self.original_index:
+            self.original_index = original_index_actual
+
+        times = lines[1].replace(" ", "").split("-->")
         try:
-            times = rows[1].replace(" ", "").split("-->")
             self.start_time = time_string_to_timedelta(times[0])
             self.end_time = time_string_to_timedelta(times[1])
         except ValueError:
@@ -35,13 +50,12 @@ class SubBlock:
         except IndexError:
             raise ParsingException(self.original_index)
 
-        if len(rows) > 2:
-            self.content = "\n".join(rows[2:]).strip()
+        if len(lines) > 2:
+            self.content = "\n".join(lines[2:]).strip()
         else:
             self.content = ""
         self.content = self.content.replace("</br>", "\n")
         self.clean_content = re.sub("[\\s.,:_-]", "", self.content)
-        self.current_index = self.original_index
         self.hints = []
 
     def equal_content(self, block: "SubBlock") -> bool:
@@ -53,6 +67,22 @@ class SubBlock:
         string = f"{timedelta_to_time_string(self.start_time)} --> {timedelta_to_time_string(self.end_time)}\n" \
                  f"{self.content.replace('--', '—')}"
         return string
+
+    @classmethod
+    def is_sub_block_header(cls, line: str) -> bool:
+        if "\n" in line:
+            return False
+
+        times = line.replace(" ", "").split("-->")
+        try:
+            start_time = time_string_to_timedelta(times[0])
+            end_time = time_string_to_timedelta(times[1])
+        except ValueError:
+            return False
+        except IndexError:
+            return False
+
+        return True
 
 
 class ParsingException(Exception):
@@ -70,9 +100,24 @@ def time_string_to_timedelta(time_string: str) -> datetime.timedelta:
     time = time_string.replace(",", ".").replace(" ", "")
     split = time.split(":")
 
-    return datetime.timedelta(hours=float(split[0]),
-                              minutes=float(split[1]),
-                              seconds=float(split[2]))
+    hours = split[0]
+    minutes = split[1]
+    seconds = split[2][:6]
+
+    seconds_clean = ""
+    found_dot = False
+    for ch in seconds:
+        if ch.isnumeric():
+            seconds_clean += ch
+        if ch == ".":
+            if not found_dot:
+                found_dot = True
+                seconds_clean += ch
+    seconds = seconds_clean
+
+    return datetime.timedelta(hours=float(hours),
+                              minutes=float(minutes),
+                              seconds=float(seconds))
 
 
 def timedelta_to_time_string(timedelta: datetime.timedelta) -> str:

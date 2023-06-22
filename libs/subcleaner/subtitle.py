@@ -31,6 +31,8 @@ class Subtitle:
         except ParsingException as e:
             e.subtitle_file = self.file
             raise e
+        for i in range(len(self.blocks)):
+            self.blocks[i].current_index = i
         try:
             self.short_path = self.file.relative_to(config.relative_base)
         except ValueError:
@@ -57,26 +59,59 @@ class Subtitle:
         except KeyError:
             pass
         self.ad_blocks.add(block)
+        if "-->" in block.content:
+            logger.warning(f"potential malformed subtitle blocks in removed block {block.original_index}.")
 
     def _parse_file_content(self, file_content: str) -> None:
         file_content = re.sub(r'\n\s*\n', '\n', file_content)
         file_content = file_content.replace("—>", "-->")
         file_content = file_content.strip()
         file_content_lines = file_content.split("\n")
-        file_content_lines[0] = "1"
         self._breakup_block(file_content_lines)
 
-    def _breakup_block(self, raw_blocks: [str]) -> None:
+    def _breakup_block(self, lines: [str]) -> None:
         last_break = 0
-        for i in range(2, len(raw_blocks)):
-            if "-->" in raw_blocks[i] and raw_blocks[i - 1].isnumeric():
-                block = SubBlock("\n".join(raw_blocks[last_break:i - 1]))
-                last_break = i - 1
-                if block.content:
-                    self.blocks.append(block)
-        block = SubBlock("\n".join(raw_blocks[last_break:]))
-        if block.content:
+        start_index = 0
+        for i in range(len(lines)):
+            line = lines[i]
+            if SubBlock.is_sub_block_header(line):
+                start_index = i + 1
+                if i == 0:
+                    last_break = i
+                    break
+
+                previous_line = lines[i - 1]
+                if previous_line[0].isnumeric():
+                    last_break = i - 1
+                else:
+                    last_break = i
+                break
+        if last_break > 1:
+            raise ParsingException(1)
+
+        for i in range(start_index, len(lines)):
+            line = lines[i]
+            previous_line = lines[i-1]
+            if not SubBlock.is_sub_block_header(line):
+                continue
+
+            if previous_line[0].isnumeric():
+                next_break = i - 1
+            else:
+                next_break = i
+
+            block = SubBlock("\n".join(lines[last_break:next_break]), len(self.blocks) + 1)
+            last_break = next_break
             self.blocks.append(block)
+            if "-->" in block.content:
+                self.warning_blocks.add(block)
+                block.hints.append("malformed_block")
+
+        block = SubBlock("\n".join(lines[last_break:]), len(self.blocks) + 1)
+        self.blocks.append(block)
+        if "-->" in block.content:
+            self.warning_blocks.add(block)
+            block.hints.append("malformed_block")
 
     def mark_blocks_for_deletion(self, purge_list: List[int]) -> None:
         for index in purge_list:
@@ -130,6 +165,9 @@ class Subtitle:
             content += f"{block.current_index}\n" \
                        f"{block}\n" \
                        f"\n"
+
+            if "-->" in block.content:
+                logger.warning(f"potential malformed subtitle blocks in block {block.current_index}.")
         return content[:-1]
 
     def get_warning_indexes(self) -> List[str]:
@@ -143,6 +181,8 @@ class Subtitle:
         for block in self.blocks:
             block.current_index = index
             index += 1
+        for block in self.ad_blocks:
+            block.current_index = None
 
     def __str__(self) -> str:
         return str(self.file)

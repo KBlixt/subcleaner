@@ -84,6 +84,7 @@ def clean_file(subtitle_file: Path) -> None:
     files_handled.append(subtitle_file.name)
 
     if args.dry_run:
+        subtitle.to_content()
         logger.warning("dry run: nothing was altered.")
     else:
         with subtitle_file.open("w", encoding="UTF-8") as file:

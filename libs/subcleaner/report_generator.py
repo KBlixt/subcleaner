@@ -26,6 +26,7 @@ def generate_report(subtitle: Subtitle) -> str:
 
     return _report[1:]
 
+
 def generate_end_report() -> str:
     _reset()
     _add("")
@@ -34,7 +35,6 @@ def generate_end_report() -> str:
     _add(_end_warning_card(cleaner.warning_blocks), " " * 40)
     _add("")
     return _report[1:]
-
 
 
 def _add(lines: str, spacer: str = "") -> None:
