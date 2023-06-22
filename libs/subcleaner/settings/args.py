@@ -66,8 +66,11 @@ parser.add_argument("--sensitive", action="store_true", dest="sensitive",
 
 explain: bool
 parser.add_argument("--explain", action="store_true", dest="explain",
-                    help="Explain: Each block will be given a list of reasons "
-                         "why they got removed/warned. (debug)")
+                    help=argparse.SUPPRESS)
+
+no_explain: bool
+parser.add_argument("--no-explain", action="store_true", dest="no_explain",
+                    help="No explain: suppresses explanations for why blocks got removed or received warnings.")
 
 end_report: bool
 parser.add_argument("--end-report", action="store_true", dest="end_report",
@@ -78,7 +81,7 @@ parser.add_argument("--end-report", action="store_true", dest="end_report",
 debug: bool
 parser.add_argument("--debug", action="store_true", dest="debug",
                     help="Debug: argument collection that contains arguments: "
-                         "--dry-run, --sensitive, --explain and --end-report")
+                         "--dry-run, --sensitive and --end-report")
 
 args = parser.parse_args()
 # check usage:
@@ -133,5 +136,5 @@ dry_run = args.dry_run or args.debug
 errors_only = args.errors_only
 removed_only = args.removed_only
 sensitive = args.sensitive or args.debug
-explain = args.explain or args.debug
+explain = not args.no_explain
 end_report = args.end_report or args.debug
