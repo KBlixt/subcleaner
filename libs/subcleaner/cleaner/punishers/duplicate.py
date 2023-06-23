@@ -18,6 +18,8 @@ def punish_clone_blocks(subtitle: Subtitle) -> None:
         if len(duplicate_list) <= 1:
             continue
         for block in duplicate_list:
+            if "♪" in block.content:
+                continue
             block.regex_matches += 1
             block.hints.append("similar_content")
 
