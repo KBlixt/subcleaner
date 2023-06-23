@@ -44,7 +44,7 @@ make sure the Bazarr container have access to the script directory. Either
 mount /opt/subcleaner directly into the container as a volume or install the script inside 
 the Bazarr config directory.
 
-I have verified that this works on the linuxserver/bazarr image.
+I have verified that this works on the [linuxserver/bazarr](https://hub.docker.com/r/linuxserver/bazarr) image.
 
 # Languages:
 The script have a few language profiles included by default:
