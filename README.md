@@ -17,11 +17,13 @@ Cloning and running with python3 should work.
 
 ```cd subcleaner```
 
-Then install the default config by testing to run the script with:
+Install the default config simply by running the script once or copy the default config into
+the script root directory.
 
 ```python3 ./subcleaner.py -h```
 
-making it executable is optional at this point.
+With the subcleaner.conf file installed you can modify the settings within it.
+the config file contains instructions what each of the settings does.
 
 ## Bazarr
 Unlock the scripts full potential by running it after downloading a subtitle from 
