@@ -5,8 +5,8 @@ and uses different regex profiles for different languages.
 Once the script have identified ad-blocks they get removed and the remaining blocks 
 get re-indexed.
 
-works well with [Bazarr](https://github.com/morpheus65535/bazarr) directly installed or in 
-a container.
+Can clean entire libraries in recursive mode and works well with [Bazarr](https://github.com/morpheus65535/bazarr) 
+directly installed or as a container from the [linuxserver/bazarr](https://hub.docker.com/r/linuxserver/bazarr) image.
 
 # Installing
 Cloning and running with python3 should work.
@@ -44,11 +44,11 @@ make sure the Bazarr container have access to the script directory. Either
 mount /opt/subcleaner directly into the container as a volume or install the script inside 
 the Bazarr config directory.
 
-# Languages:
-a language Don't need a language profile for it to work but it's recommended. the script have a 
-few language profiles included by default:
+I have verified that this works on the linuxserver/bazarr image.
 
-Included language profiles:
+# Languages:
+The script have a few language profiles included by default:
+
 - English
 - Spanish
 - Portuguese
@@ -56,8 +56,9 @@ Included language profiles:
 - Indonesian
 - Swedish
 
-If you want to improve the performance in a different language you'll have to make a profile for that language.
-read the README in the regex_profiles directory for more info and guidance.
+If you want to run the script against any other language you'll have to either create a profile for it
+or disable the requirement in the subcleaner.conf file. It's recommended to create
+a language profile. read the README in the regex_profiles directory for more info and guidance.
 
 ### If you make a useful regex profile for a non-default language, PLEASE let me know! 
 I'll review it and add it to the included default profiles. And it'll help out others that use 
