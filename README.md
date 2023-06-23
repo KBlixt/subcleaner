@@ -66,12 +66,6 @@ a language profile. read the README in the regex_profiles directory for more inf
 I'll review it and add it to the included default profiles. And it'll help out others that use 
 that language in the future! :)
 
-# Setup
-Install the default config simply by running the script once or copy the default config into
-the script root directory.
-With the subcleaner.conf file installed you can modify the settings within it.
-the config file contains instructions what each of the settings does.
-
 __________________
 
 
