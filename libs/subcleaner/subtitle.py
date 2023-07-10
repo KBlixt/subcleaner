@@ -102,15 +102,17 @@ class Subtitle:
 
             block = SubBlock("\n".join(lines[last_break:next_break]), len(self.blocks) + 1)
             last_break = next_break
-            self.blocks.append(block)
+            if block.content:
+                self.blocks.append(block)
             if "-->" in block.content:
-                self.warning_blocks.add(block)
+                self.warn(block)
                 block.hints.append("malformed_block")
 
         block = SubBlock("\n".join(lines[last_break:]), len(self.blocks) + 1)
-        self.blocks.append(block)
+        if block.content:
+            self.blocks.append(block)
         if "-->" in block.content:
-            self.warning_blocks.add(block)
+            self.warn(block)
             block.hints.append("malformed_block")
 
     def mark_blocks_for_deletion(self, purge_list: List[int]) -> None:

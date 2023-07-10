@@ -22,16 +22,16 @@ def main():
     if files_handled == 0:
         logger.error(f"no srt files found.")
 
-    if args.end_report:
-        logger.info("end of run report: \n" + report_generator.generate_end_report())
-
     if len(files_handled) > 0:
+        if args.end_report and len(files_handled) > 1:
+            logger.info("end of run report: \n" + report_generator.generate_end_report())
+
         logger.info(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
         if args.silent or args.errors_only:
             print(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
     else:
         logger.error("subcleaner didn't find any files to clean!")
-        if args.silent or args.errors_only:
+        if args.silent:
             print("subcleaner didn't find any files to clean!")
 
 
@@ -60,6 +60,8 @@ def clean_file(subtitle_file: Path) -> None:
     if not subtitle.language_is_correct():
         logger.warning(f"the language within the file does not match language: '{subtitle.language}'")
 
+    cleaner.unscramble(subtitle)
+    cleaner.remove_ads(subtitle)
     cleaner.find_ads(subtitle)
     cleaner.remove_ads(subtitle)
     if config.fix_overlaps:
@@ -93,6 +95,9 @@ def clean_file(subtitle_file: Path) -> None:
 
 def clean_directory(directory: Path) -> None:
     for file in directory.iterdir():
+        if file.name.startswith("."):
+            continue
+
         if file.is_dir() and not file.is_symlink():
             clean_directory(file)
 

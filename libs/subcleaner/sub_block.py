@@ -65,7 +65,7 @@ class SubBlock:
 
     def __str__(self) -> str:
         string = f"{timedelta_to_time_string(self.start_time)} --> {timedelta_to_time_string(self.end_time)}\n" \
-                 f"{self.content.replace('--', '—')}"
+                 f"{self.content}"
         return string
 
     @classmethod
@@ -84,6 +84,10 @@ class SubBlock:
 
         return True
 
+    @property
+    def duration_seconds(self) -> float:
+        return (self.end_time - self.start_time).total_seconds()
+
 
 class ParsingException(Exception):
     block_index: int
@@ -100,8 +104,8 @@ def time_string_to_timedelta(time_string: str) -> datetime.timedelta:
     time = time_string.replace(",", ".").replace(" ", "")
     split = time.split(":")
 
-    hours = split[0]
-    minutes = split[1]
+    hours = float(split[0])
+    minutes = float(split[1])
     seconds = split[2][:6]
 
     seconds_clean = ""
@@ -113,11 +117,15 @@ def time_string_to_timedelta(time_string: str) -> datetime.timedelta:
             if not found_dot:
                 found_dot = True
                 seconds_clean += ch
-    seconds = seconds_clean
+    seconds = float(seconds_clean)
+    if seconds >= 60:
+        raise ValueError()
+    if minutes >= 60:
+        raise ValueError()
 
-    return datetime.timedelta(hours=float(hours),
-                              minutes=float(minutes),
-                              seconds=float(seconds))
+    return datetime.timedelta(hours=hours,
+                              minutes=minutes,
+                              seconds=seconds)
 
 
 def timedelta_to_time_string(timedelta: datetime.timedelta) -> str:

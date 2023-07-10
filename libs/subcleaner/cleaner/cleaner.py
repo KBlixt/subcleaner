@@ -60,6 +60,7 @@ def remove_ads(subtitle: Subtitle):
         else:
             warning_blocks[block] = {subtitle.short_path}
     subtitle.reindex()
+    subtitle.ad_blocks = set()
 
 
 def fix_overlap(subtitle: Subtitle) -> None:
@@ -73,10 +74,19 @@ def fix_overlap(subtitle: Subtitle) -> None:
             continue
 
         overlap = previous_block.end_time - block.start_time + timedelta(seconds=3 / 30)
-        if timedelta(milliseconds=3) < overlap and ((len(block.content) + len(previous_block.content)) > 0):
+        if timedelta(milliseconds=3) < overlap and (len(block.content) + len(previous_block.content)) > 0:
             content_ratio = len(block.content) / (len(block.content) + len(previous_block.content))
             block.start_time += content_ratio * overlap
             previous_block.end_time += (content_ratio - 1) * overlap
 
         previous_block = block
     return
+
+
+def unscramble(subtitle: Subtitle):
+    subtitle.blocks.sort(key=lambda x: x.start_time)
+    for block in subtitle.blocks:
+        if block.duration_seconds < 0:
+            subtitle.ad(block)
+            block.hints.append("negative_duration")
+    subtitle.reindex()
