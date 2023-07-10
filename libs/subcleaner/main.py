@@ -61,7 +61,6 @@ def clean_file(subtitle_file: Path) -> None:
         logger.warning(f"the language within the file does not match language: '{subtitle.language}'")
 
     cleaner.unscramble(subtitle)
-    cleaner.remove_ads(subtitle)
     cleaner.find_ads(subtitle)
     cleaner.remove_ads(subtitle)
     if config.fix_overlaps:
