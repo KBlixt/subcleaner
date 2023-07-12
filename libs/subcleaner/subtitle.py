@@ -8,6 +8,8 @@ from .sub_block import SubBlock, ParsingException
 from libs import langdetect
 from pathlib import Path
 
+from ..langdetect import LangDetectException
+
 logger = logging.getLogger(__name__)
 
 
@@ -135,7 +137,11 @@ class Subtitle:
 
         if len(sub_content) < 500:
             return True  # not enough content to estimate language.
-        detected_language = langdetect.detect_langs(sub_content)[0]
+        try:
+            detected_language = langdetect.detect_langs(sub_content)[0]
+        except LangDetectException as e:
+            logger.warning(f"{self} can't be analyzed by language detector.")
+            return True
 
         return detected_language.lang == language_code_2 and detected_language.prob > 0.8
 
@@ -157,7 +163,12 @@ class Subtitle:
             sub_content += block.content
         if len(sub_content) < 500:
             return
-        detected_language = langdetect.detect_langs(sub_content)[0]
+        try:
+            detected_language = langdetect.detect_langs(sub_content)[0]
+        except LangDetectException:
+            logger.warning(f"{self} can't be analyzed by language detector.")
+            return
+
         if detected_language.prob > 0.9:
             self.language = detected_language.lang
 

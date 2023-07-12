@@ -74,9 +74,11 @@ class SubBlock:
             return False
 
         times = line.replace(" ", "").split("-->")
+        if len(times) < 2:
+            return False
         try:
-            start_time = time_string_to_timedelta(times[0])
-            end_time = time_string_to_timedelta(times[1])
+            time_string_to_timedelta(times[0])
+            time_string_to_timedelta(times[1])
         except ValueError:
             return False
         except IndexError:

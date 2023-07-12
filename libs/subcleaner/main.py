@@ -39,11 +39,14 @@ def clean_file(subtitle_file: Path) -> None:
     if subtitle_file.name in files_handled:
         return
     logger.info("[---------------------------------------------------------------------------------]")
-
     try:
+        short_file = subtitle_file.relative_to(config.relative_base)
+    except ValueError:
+        short_file = subtitle_file
+    try:
+        logger.info(f"loading subtitle: {short_file}")
         subtitle = Subtitle(subtitle_file)
     except (UnicodeDecodeError, ParsingException, FileContentException) as e:
-        logger.info(f"now cleaning subtitle: {subtitle_file}")
         logger.error(f"subcleaner was unable to decode the file. reason:")
         logger.error(e)
         return
