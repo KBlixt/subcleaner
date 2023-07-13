@@ -19,7 +19,7 @@ class SubBlock:
     def __init__(self, block_content: str, original_index_actual: int):
         lines = block_content.strip().split("\n")
 
-        if self.is_sub_block_header(lines[0]):
+        if self.is_sub_block_header(lines[0]) and len(lines) > 1 and not self.is_sub_block_header(lines[1]):
             lines = [""] + lines
 
         if lines[0].isnumeric():
@@ -37,16 +37,16 @@ class SubBlock:
                 self.original_index = original_index_actual
 
         if len(lines) < 2 or not self.is_sub_block_header(lines[1]):
-            raise ParsingException(self.original_index)
+            raise ParsingException(self.original_index, "incorrectly formatted subtitle block")
 
         times = lines[1].replace(" ", "").split("-->")
         try:
             self.start_time = time_string_to_timedelta(times[0])
             self.end_time = time_string_to_timedelta(times[1])
         except ValueError:
-            raise ParsingException(self.original_index)
+            raise ParsingException(self.original_index, "failed to parse timeframe.")
         except IndexError:
-            raise ParsingException(self.original_index)
+            raise ParsingException(self.original_index, "failed to parse timeframe.")
 
         if len(lines) > 2:
             self.content = "\n".join(lines[2:]).strip()
@@ -93,12 +93,14 @@ class ParsingException(Exception):
     block_index: int
     subtitle_file: str
     file_line: int
+    reason: str
 
-    def __init__(self, block_index):
+    def __init__(self, block_index, reason):
         self.block_index = block_index
+        self.reason = reason
 
     def __str__(self) -> str:
-        return f"Parsing error at block {self.block_index} in file \"{self.subtitle_file}\" line {self.file_line}."
+        return f"Parsing error at block {self.block_index} in file \"{self.subtitle_file}\" line {self.file_line}. reason: {self.reason}"
 
 
 def time_string_to_timedelta(time_string: str) -> datetime.timedelta:

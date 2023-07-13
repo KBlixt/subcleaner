@@ -79,25 +79,31 @@ class Subtitle:
         start_index = 0
         for i in range(len(lines)):
             line = lines[i]
-            if SubBlock.is_sub_block_header(line):
-                start_index = i + 1
-                if i == 0:
-                    last_break = i
-                    break
-
-                previous_line = lines[i - 1]
-                if previous_line[0].isnumeric():
-                    last_break = i - 1
-                else:
-                    last_break = i
+            if not SubBlock.is_sub_block_header(line) or i == len(lines)-1 or SubBlock.is_sub_block_header(lines[i+1]):
+                continue
+            start_index = i + 1
+            if i == 0:
+                last_break = i
                 break
+
+            previous_line = lines[i - 1]
+            if previous_line[0].isnumeric():
+                last_break = i - 1
+            else:
+                last_break = i
+            break
         if last_break > 1:
-            raise ParsingException(1)
+            e = ParsingException(1, "incorrectly formatted subtitle block")
+            e.subtitle_file = self.file
+            e.file_line = line_lookup.get(lines[last_break], None)
+            if not e.file_line:
+                e.file_line = line_lookup.get(lines[last_break + 1], None)
+            logger.warning(str(e))
 
         for i in range(start_index, len(lines)):
             line = lines[i]
             previous_line = lines[i-1]
-            if not SubBlock.is_sub_block_header(line):
+            if not SubBlock.is_sub_block_header(line) or i == len(lines)-1 or SubBlock.is_sub_block_header(lines[i+1]):
                 continue
 
             if previous_line[0].isnumeric():
@@ -112,7 +118,9 @@ class Subtitle:
                 e.file_line = line_lookup.get(lines[last_break], None)
                 if not e.file_line:
                     e.file_line = line_lookup.get(lines[last_break+1], None)
-                raise
+                logger.warning(e)
+                self.blocks[-1].content += "\n\n" + "\n".join(lines[last_break:next_break])
+                continue
 
             if block.content:
                 self.blocks.append(block)
@@ -127,7 +135,9 @@ class Subtitle:
             e.file_line = line_lookup.get(lines[last_break], None)
             if not e.file_line:
                 e.file_line = line_lookup.get(lines[last_break + 1], None)
-            raise
+            logger.warning(e)
+            self.blocks[-1].content += "\n\n" + "\n".join(lines[last_break:])
+            return
         if block.content:
             self.blocks.append(block)
         if "-->" in block.content:
