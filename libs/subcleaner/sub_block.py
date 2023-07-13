@@ -21,8 +21,6 @@ class SubBlock:
 
         if self.is_sub_block_header(lines[0]):
             lines = [""] + lines
-        if len(lines) < 2 or not self.is_sub_block_header(lines[1]):
-            raise ParsingException(original_index_actual)
 
         if lines[0].isnumeric():
             self.original_index = int(lines[0])
@@ -35,11 +33,12 @@ class SubBlock:
                     break
             if number:
                 self.original_index = int(number)
-            else:
-                self.original_index = original_index_actual
 
         if not self.original_index:
             self.original_index = original_index_actual
+
+        if len(lines) < 2 or not self.is_sub_block_header(lines[1]):
+            raise ParsingException(self.original_index)
 
         times = lines[1].replace(" ", "").split("-->")
         try:
