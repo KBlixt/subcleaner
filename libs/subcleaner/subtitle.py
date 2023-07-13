@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import List, Set
+from typing import List, Set, Dict
 
 from . import languages
 from .settings import args, config
@@ -28,11 +28,8 @@ class Subtitle:
         self.warning_blocks = set()
 
         file_content = read_file(self.file)
-        try:
-            self._parse_file_content(file_content)
-        except ParsingException as e:
-            e.subtitle_file = self.file
-            raise e
+        self._parse_file_content(file_content)
+
         for i in range(len(self.blocks)):
             self.blocks[i].current_index = i
         try:
@@ -65,13 +62,19 @@ class Subtitle:
             logger.warning(f"potential malformed subtitle blocks in removed block {block.original_index}.")
 
     def _parse_file_content(self, file_content: str) -> None:
-        file_content = re.sub(r'\n\s*\n', '\n', file_content)
         file_content = file_content.replace("—>", "-->")
+        current_line = 0
+        line_lookup: Dict[str, int] = {}
+        for line in file_content.split("\n"):
+            current_line += 1
+            if "-->" in line:
+                line_lookup[line] = current_line
+        file_content = re.sub(r'\n\s*\n', '\n', file_content)
         file_content = file_content.strip()
         file_content_lines = file_content.split("\n")
-        self._breakup_block(file_content_lines)
+        self._breakup_block(file_content_lines, line_lookup)
 
-    def _breakup_block(self, lines: [str]) -> None:
+    def _breakup_block(self, lines: [str], line_lookup: Dict[str, int]) -> None:
         last_break = 0
         start_index = 0
         for i in range(len(lines)):
@@ -102,15 +105,29 @@ class Subtitle:
             else:
                 next_break = i
 
-            block = SubBlock("\n".join(lines[last_break:next_break]), len(self.blocks) + 1)
-            last_break = next_break
+            try:
+                block = SubBlock("\n".join(lines[last_break:next_break]), len(self.blocks) + 1)
+            except ParsingException as e:
+                e.subtitle_file = self.file
+                e.file_line = line_lookup.get(lines[last_break], None)
+                if not e.file_line:
+                    e.file_line = line_lookup.get(lines[last_break+1], None)
+                raise
+
             if block.content:
                 self.blocks.append(block)
             if "-->" in block.content:
                 self.warn(block)
                 block.hints.append("malformed_block")
-
-        block = SubBlock("\n".join(lines[last_break:]), len(self.blocks) + 1)
+            last_break = next_break
+        try:
+            block = SubBlock("\n".join(lines[last_break:]), len(self.blocks) + 1)
+        except ParsingException as e:
+            e.subtitle_file = self.file
+            e.file_line = line_lookup.get(lines[last_break], None)
+            if not e.file_line:
+                e.file_line = line_lookup.get(lines[last_break + 1], None)
+            raise
         if block.content:
             self.blocks.append(block)
         if "-->" in block.content:
