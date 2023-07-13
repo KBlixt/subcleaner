@@ -21,7 +21,7 @@ class SubBlock:
 
         if self.is_sub_block_header(lines[0]):
             lines = [""] + lines
-        if not self.is_sub_block_header(lines[1]):
+        if len(lines) < 2 or not self.is_sub_block_header(lines[1]):
             raise ParsingException(original_index_actual)
 
         if lines[0].isnumeric():
