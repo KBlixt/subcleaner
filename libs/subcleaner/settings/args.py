@@ -107,6 +107,7 @@ for library_str in args.library:
             library = config.relative_base.joinpath(library)
         if debug:
             print(f"library: {library}")
+            print(f"library: {type(library)}")
     for item in glob.glob(glob.escape(str(library)).replace("[*]", "*")):
         if debug:
             print(f"item: {item}")
