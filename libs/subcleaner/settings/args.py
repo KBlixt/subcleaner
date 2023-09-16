@@ -34,7 +34,7 @@ def check_disk_liveliness(disk: Path):
     except (PermissionError, FileExistsError):
         return
     except FileNotFoundError:
-        logger.error(f"The {disk} is currently inaccessible. please reconnect to the drive.")
+        logger.error(f"The {disk} drive is currently inaccessible. please reconnect to the drive.")
 
 
 parser = argparse.ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
