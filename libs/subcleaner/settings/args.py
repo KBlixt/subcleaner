@@ -105,7 +105,8 @@ for library_str in args.library:
             library = Path.cwd().joinpath(library)
         else:
             library = config.relative_base.joinpath(library)
-
+        if debug:
+            print(f"library: {library}")
     for item in glob.glob(glob.escape(str(library)).replace("[*]", "*")):
         if debug:
             print(f"item: {item}")
@@ -115,7 +116,7 @@ for library_str in args.library:
         else:
             if debug:
                 print(f"not added item: {item}")
-                print(f"{item.is_block_device()} {item.is_mount()} {item.is_symlink()}")
+                print(f"{item.is_block_device()} {item.is_symlink()}")
 
 if debug:
     print(f"arg.subtitle: {args.subtitle}")
