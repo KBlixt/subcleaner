@@ -16,7 +16,11 @@ def _run_regex_on_block(block: SubBlock, regex_list: List[Tuple[str, str]], puni
     clean_content = " ".join(block.content.replace("-\n", "-").split())
     for regex in regex_list:
         try:
-            result = re.findall(regex[1], clean_content, flags=re.IGNORECASE | re.UNICODE)
+            result = re.findall("(" + regex[1] + ")", clean_content, flags=re.IGNORECASE | re.UNICODE)
+            if result and isinstance(result[0], str):
+                result = set(result)
+            else:
+                result = set([t[0] for t in result])
         except re.error as e:
             raise ValueError(f"regex {regex[0]} is miss configured: {e.msg}")
         if result:

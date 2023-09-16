@@ -4,8 +4,6 @@ from libs.subcleaner.sub_block import SubBlock
 from libs.subcleaner.subtitle import Subtitle
 
 
-# todo: what if multiple blocks are identical in content but chained to made look like a single subtitle
-
 def punish_ad_adjacency(subtitle: Subtitle) -> None:
     nearby_blocks: Set[SubBlock] = set()
     for index in range(0, len(subtitle.blocks)):

@@ -49,6 +49,16 @@ class Subtitle:
         if args.destroy_list:
             self.mark_blocks_for_deletion(args.destroy_list)
 
+        if len(self.blocks) > 1:
+            prev_block = self.blocks[0]
+            blocks_to_remove: Set[SubBlock] = set()
+            for block in self.blocks[1:]:
+                if block.content == prev_block.content and (prev_block.end_time - block.start_time).total_seconds() < 1/31:
+                    prev_block.end_time = block.end_time
+                    blocks_to_remove.add(block)
+                    continue
+                prev_block = block
+
     def warn(self, block: SubBlock):
         if block not in self.ad_blocks:
             self.warning_blocks.add(block)
@@ -156,9 +166,17 @@ class Subtitle:
 
     def mark_blocks_for_deletion(self, purge_list: List[int]) -> None:
         for index in purge_list:
-            if index-1 >= len(self.blocks):
-                continue
-            self.blocks[index-1].regex_matches = 3
+            for block in self.blocks:
+                if block.original_index == index:
+                    block.regex_matches = 3
+                    break
+            else:
+                if index-1 >= len(self.blocks):
+                    continue
+                block = self.blocks[index - 1]
+                if not block.original_index or block.original_index == index:
+                    block.regex_matches = 3
+                logger.warning("indexing in subtitle does not match with parsed subtitle.")
 
     def language_is_correct(self) -> bool:
         if self.language == "und":
