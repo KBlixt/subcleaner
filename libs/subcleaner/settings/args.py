@@ -90,6 +90,11 @@ if len(args.subtitle) == 0 and len(args.library) == 0:
     parser.print_help()
     exit()
 
+debug = args.debug
+
+if debug:
+    print(f"arg.library: {args.library}")
+
 libraries = []
 for library_str in args.library:
     library: Path = Path(library_str)
@@ -103,6 +108,9 @@ for library_str in args.library:
         item = Path(item).resolve()
         if item.is_dir():
             libraries.append(item)
+
+if debug:
+    print(f"arg.subtitle: {args.subtitle}")
 
 subtitles = []
 for file_str in args.subtitle:
@@ -138,4 +146,3 @@ removed_only = args.removed_only
 sensitive = args.sensitive or args.debug
 explain = not args.no_explain
 end_report = args.end_report or args.debug
-debug = args.debug
