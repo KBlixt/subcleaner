@@ -1,6 +1,8 @@
 import argparse
 import logging
 import glob
+import os
+import pathlib
 from pathlib import Path
 from typing import Optional, List
 
@@ -8,6 +10,32 @@ from libs.subcleaner import languages
 from . import config
 
 logger = logging.getLogger(__name__)
+
+checked_disks = set("C:")
+
+
+def check_disk_liveliness(disk: Path):
+    if disk.drive in checked_disks:
+        return
+    checked_disks.add(disk.drive)
+
+    try:
+        try:
+            prev_cwd = Path.cwd()
+            os.chdir(disk)
+            os.chdir(prev_cwd)
+            return
+        except FileNotFoundError:
+            tmp_file = disk.joinpath(".subcleaner-tigger-file.safe_to_delete")
+            tmp_file.touch()
+            tmp_file.unlink()
+            return
+
+    except (PermissionError, FileExistsError):
+        return
+    except FileNotFoundError:
+        logger.error(f"The {disk} is currently inaccessible. please reconnect to the drive.")
+
 
 parser = argparse.ArgumentParser(description="Remove ads from subtitle. Removed blocks are sent to logfile. "
                                              "Can also check that the subtitle language match the file name language code. ")
@@ -105,19 +133,13 @@ for library_str in args.library:
             library = Path.cwd().joinpath(library)
         else:
             library = config.relative_base.joinpath(library)
-        if debug:
-            print(f"library: {library}")
-            print(f"library: {type(library)}")
+    if isinstance(library, pathlib.WindowsPath):
+        check_disk_liveliness(Path(library.drive + "/"))
+
     for item in glob.glob(glob.escape(str(library)).replace("[*]", "*")):
-        if debug:
-            print(f"item: {item}")
         item = Path(item).resolve()
         if item.is_dir():
             libraries.append(item)
-        else:
-            if debug:
-                print(f"not added item: {item}")
-                print(f"{item.is_block_device()} {item.is_symlink()}")
 
 if debug:
     print(f"arg.subtitle: {args.subtitle}")
@@ -130,6 +152,8 @@ for file_str in args.subtitle:
             file = Path.cwd().joinpath(file)
         else:
             file = config.relative_base.joinpath(file)
+    if isinstance(file, pathlib.WindowsPath):
+        check_disk_liveliness(Path(file.drive + "/"))
 
     for item in glob.glob(glob.escape(str(file)).replace("[*]", "*")):
         item = Path(item).resolve()
