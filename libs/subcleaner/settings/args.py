@@ -138,3 +138,4 @@ removed_only = args.removed_only
 sensitive = args.sensitive or args.debug
 explain = not args.no_explain
 end_report = args.end_report or args.debug
+debug = args.debug

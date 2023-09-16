@@ -14,9 +14,10 @@ files_handled: List[str] = []
 def main():
     for file in args.subtitles:
         if file.suffix == ".srt":
+            logger.debug(f"cleaning file: {file}")
             clean_file(file)
-
     for library in args.libraries:
+        logger.debug(f"cleaning library: {library}")
         clean_directory(library)
 
     if files_handled == 0:
@@ -107,10 +108,12 @@ def clean_directory(directory: Path) -> None:
             continue
 
         if not args.language:
+            logger.debug(f"cleaning file: {file}")
             clean_file(file)
             continue
 
         for suffix in file.suffixes[max(-3, -len(file.suffixes)):-1]:
             parsed_lang = suffix.replace(":", "-").replace("_", "-").split("-")[0][1:]
             if languages.is_language(parsed_lang) and args.language == parsed_lang:
+                logger.debug(f"cleaning file: {file}")
                 clean_file(file)

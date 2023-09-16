@@ -27,4 +27,6 @@ if args.silent:
     stout_handler.setLevel(logging.WARNING)
 if args.errors_only:
     stout_handler.setLevel(logging.ERROR)
+if args.debug:
+    stout_handler.setLevel(logging.DEBUG)
 base_logger.addHandler(stout_handler)
