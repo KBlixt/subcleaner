@@ -107,9 +107,15 @@ for library_str in args.library:
             library = config.relative_base.joinpath(library)
 
     for item in glob.glob(glob.escape(str(library)).replace("[*]", "*")):
+        if debug:
+            print(f"item: {item}")
         item = Path(item).resolve()
         if item.is_dir():
             libraries.append(item)
+        else:
+            if debug:
+                print(f"not added item: {item}")
+                print(f"{item.is_block_device()} {item.is_mount()} {item.is_symlink()}")
 
 if debug:
     print(f"arg.subtitle: {args.subtitle}")

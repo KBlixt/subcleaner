@@ -16,6 +16,8 @@ def main():
         if file.suffix == ".srt":
             logger.debug(f"cleaning file: {file}")
             clean_file(file)
+
+    logger.debug(f"path libraries: {args.libraries}")
     for library in args.libraries:
         logger.debug(f"cleaning library: {library}")
         clean_directory(library)
