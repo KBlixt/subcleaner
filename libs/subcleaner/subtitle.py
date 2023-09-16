@@ -20,6 +20,7 @@ class Subtitle:
     language: str
     file: Path
     short_path: Path
+    pre_content_artifact: str = ""
 
     def __init__(self, subtitle_file: Path) -> None:
         self.file = subtitle_file
@@ -100,6 +101,11 @@ class Subtitle:
                 e.file_line = line_lookup.get(lines[last_break + 1], None)
             logger.warning(str(e))
 
+            for line in lines[:last_break]:
+                if "-->" in line:
+                    line = line + "\n"
+                self.pre_content_artifact += line + "\n"
+
         for i in range(start_index, len(lines)):
             line = lines[i]
             previous_line = lines[i-1]
@@ -118,6 +124,8 @@ class Subtitle:
                 e.file_line = line_lookup.get(lines[last_break], None)
                 if not e.file_line:
                     e.file_line = line_lookup.get(lines[last_break+1], None)
+                if not self.blocks:
+                    self.pre_content_artifact += "\n" + "\n".join(lines[last_break:next_break]) + "\n"
                 logger.warning(e)
                 self.blocks[-1].content += "\n\n" + "\n".join(lines[last_break:next_break])
                 continue
@@ -136,6 +144,8 @@ class Subtitle:
             if not e.file_line:
                 e.file_line = line_lookup.get(lines[last_break + 1], None)
             logger.warning(e)
+            if not self.blocks:
+                raise e
             self.blocks[-1].content += "\n\n" + "\n".join(lines[last_break:])
             return
         if block.content:
@@ -200,7 +210,7 @@ class Subtitle:
             self.language = detected_language.lang
 
     def to_content(self) -> str:
-        content = ""
+        content = self.pre_content_artifact
         for block in self.blocks:
             content += f"{block.current_index}\n" \
                        f"{block}\n" \
