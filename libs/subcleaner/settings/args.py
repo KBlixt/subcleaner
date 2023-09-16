@@ -91,6 +91,8 @@ if len(args.subtitle) == 0 and len(args.library) == 0:
     exit()
 
 debug = args.debug
+if debug:
+    print("debug mode.")
 
 if debug:
     print(f"arg.library: {args.library}")
