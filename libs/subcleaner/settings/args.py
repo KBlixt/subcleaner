@@ -26,7 +26,7 @@ def check_disk_liveliness(disk: Path):
             os.chdir(prev_cwd)
             return
         except FileNotFoundError:
-            tmp_file = disk.joinpath(".subcleaner-tigger-file.safe_to_delete")
+            tmp_file = disk.joinpath(".subcleaner-disk-liveliness-checker.safe_to_delete")
             tmp_file.touch()
             tmp_file.unlink()
             return
