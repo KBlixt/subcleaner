@@ -1,6 +1,6 @@
 from pathlib import Path
 import logging
-from typing import List
+from typing import List, Dict
 from .subtitle import Subtitle, ParsingException, FileContentException
 from libs.subcleaner import cleaner, report_generator, languages, regex_lists
 from .settings import args, config
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 files_handled: List[str] = []
-files_failed: List[str] = []
+files_failed: Dict[str, str] = {}
 
 
 def main():
@@ -34,8 +34,8 @@ def main():
         else:
             logger.info(f"subcleaner finished successfully partly. {len(files_handled)}/{len(files_handled) + len(files_failed)} files cleaned successfully.")
             logger.info(f"failed to clean following files:")
-            for file_name in files_failed:
-                logger.info(f"  - {file_name}")
+            for file_name, reason in files_failed.items():
+                logger.info(f"  - '{file_name}' reason: {reason}")
             if args.errors_only:
                 print(f"subcleaner finished successfully partly. {len(files_handled)}/{len(files_handled) + len(files_failed)} files cleaned successfully.")
     else:
@@ -63,16 +63,16 @@ def clean_file(subtitle_file: Path) -> None:
     except (UnicodeDecodeError, ParsingException, FileContentException) as e:
         logger.error(f"subcleaner was unable to decode the file. reason:")
         logger.error(e)
-        files_failed.append(subtitle_file.name)
+        files_failed[subtitle_file.name] = f"subcleaner was unable to decode the file: {e}"
         return
     if not subtitle:
         logger.warning("Subtitle file is empty.")
-        files_failed.append(subtitle_file.name)
+        files_failed[subtitle_file.name] = "Subtitle file is empty."
         return
     if config.require_language_profile and not regex_lists.language_has_profile(subtitle.language):
         logger.warning(f"language '{subtitle.language}' have no regex profile associated with it.")
         logger.warning(f"either create a regex profile for it or disable require_language_profile in the config.")
-        files_failed.append(subtitle_file.name)
+        files_failed[subtitle_file.name] = f"language '{subtitle.language}' have no regex profile associated with it."
         return
 
     logger.info(f"now cleaning subtitle: {subtitle.short_path}")
@@ -100,7 +100,7 @@ def clean_file(subtitle_file: Path) -> None:
                      "Nothing was altered.")
         if reasons:
             logger.error("all removed blocks had common reasons: " + ", ".join(reasons))
-        files_failed.append(subtitle_file.name)
+        files_failed[subtitle_file.name] = "all removed blocks had common reasons: " + ", ".join(reasons)
         return
 
     logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")
