@@ -169,6 +169,7 @@ class Subtitle:
             for block in self.blocks:
                 if block.original_index == index:
                     block.regex_matches = 3
+                    block.hints.append("destroyed by index")
                     break
             else:
                 if index-1 >= len(self.blocks):
@@ -176,6 +177,7 @@ class Subtitle:
                 block = self.blocks[index - 1]
                 if not block.original_index or block.original_index == index:
                     block.regex_matches = 3
+                    block.hints.append("destroyed by index")
                 logger.warning("indexing in subtitle does not match with parsed subtitle.")
 
     def language_is_correct(self) -> bool:

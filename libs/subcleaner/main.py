@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 files_handled: List[str] = []
+files_failed: List[str] = []
 
 
 def main():
@@ -22,24 +23,34 @@ def main():
         logger.debug(f"cleaning library: {library}")
         clean_directory(library)
 
-    if files_handled == 0:
-        logger.error(f"no srt files found.")
-
-    if len(files_handled) > 0:
+    if files_handled:
         if args.end_report and len(files_handled) > 1:
             logger.info("end of run report: \n" + report_generator.generate_end_report())
 
-        logger.info(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
-        if args.silent or args.errors_only:
-            print(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
+        if not files_failed:
+            logger.info(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
+            if args.silent or args.errors_only:
+                print(f"subcleaner finished successfully. {len(files_handled)} files cleaned.")
+        else:
+            logger.info(f"subcleaner finished successfully partly. {len(files_handled)}/{len(files_handled) + len(files_failed)} files cleaned successfully.")
+            logger.info(f"failed to clean following files:")
+            for file_name in files_failed:
+                logger.info(f"  - {file_name}")
+            if args.errors_only:
+                print(f"subcleaner finished successfully partly. {len(files_handled)}/{len(files_handled) + len(files_failed)} files cleaned successfully.")
     else:
-        logger.error("subcleaner didn't find any files to clean!")
-        if args.silent:
-            print("subcleaner didn't find any files to clean!")
+        if files_failed:
+            logger.error(f"subcleaner didn't successfully clean any files, failed to clean {len(files_failed)} files.")
+            if args.silent:
+                print(f"subcleaner didn't successfully clean any files, failed to clean {len(files_failed)} files.")
+        else:
+            logger.error("subcleaner didn't find any files to clean!")
+            if args.silent:
+                print("subcleaner didn't find any files to clean!")
 
 
 def clean_file(subtitle_file: Path) -> None:
-    if subtitle_file.name in files_handled:
+    if subtitle_file.name in files_handled or subtitle_file.name in files_failed:
         return
     logger.info("[---------------------------------------------------------------------------------]")
     try:
@@ -52,13 +63,16 @@ def clean_file(subtitle_file: Path) -> None:
     except (UnicodeDecodeError, ParsingException, FileContentException) as e:
         logger.error(f"subcleaner was unable to decode the file. reason:")
         logger.error(e)
+        files_failed.append(subtitle_file.name)
         return
     if not subtitle:
         logger.warning("Subtitle file is empty.")
+        files_failed.append(subtitle_file.name)
         return
     if config.require_language_profile and not regex_lists.language_has_profile(subtitle.language):
         logger.warning(f"language '{subtitle.language}' have no regex profile associated with it.")
         logger.warning(f"either create a regex profile for it or disable require_language_profile in the config.")
+        files_failed.append(subtitle_file.name)
         return
 
     logger.info(f"now cleaning subtitle: {subtitle.short_path}")
@@ -86,6 +100,7 @@ def clean_file(subtitle_file: Path) -> None:
                      "Nothing was altered.")
         if reasons:
             logger.error("all removed blocks had common reasons: " + ", ".join(reasons))
+        files_failed.append(subtitle_file.name)
         return
 
     logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")

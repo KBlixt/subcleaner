@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 from pathlib import Path
 from typing import *
@@ -54,6 +55,8 @@ def remove_ads(subtitle: Subtitle):
     for block in subtitle.ad_blocks:
         try:
             subtitle.blocks.remove(block)
+            if "-->" in block.content:
+                logger.warning(f"potential malformed subtitle blocks in removed block {block.original_index}.")
         except ValueError:
             pass
         for e_block in ad_blocks:
@@ -97,7 +100,7 @@ def fix_overlap(subtitle: Subtitle) -> None:
 def unscramble(subtitle: Subtitle):
     subtitle.blocks.sort(key=lambda x: x.start_time)
     for block in subtitle.blocks:
-        if block.duration_seconds < 0:
+        if block.duration_seconds <= 0:
             subtitle.blocks.remove(block)
             subtitle.ad(block)
             block.hints.append("negative_duration")
