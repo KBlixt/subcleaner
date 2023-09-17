@@ -1,5 +1,4 @@
 import configparser
-import re
 from pathlib import Path
 from typing import List, Dict, Tuple
 
@@ -9,21 +8,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 global_profiles: List["GlobalProfile"] = []
-purge_regex: Dict[str, List[Tuple[str, re.Pattern]]] = {}
-warning_regex: Dict[str, List[Tuple[str, re.Pattern]]] = {}
+purge_regex: Dict[str, List[Tuple[str, str]]] = {}
+warning_regex: Dict[str, List[Tuple[str, str]]] = {}
 
 
 def language_has_profile(language: str):
     return language in purge_regex
 
 
-def get_purge_regex(language: str) -> List[Tuple[str, re.Pattern]]:
+def get_purge_regex(language: str) -> List[Tuple[str, str]]:
     if language in purge_regex:
         return purge_regex[language]
     return purge_regex["no_profile"]
 
 
-def get_warning_regex(language: str) -> List[Tuple[str, re.Pattern]]:
+def get_warning_regex(language: str) -> List[Tuple[str, str]]:
     if language in warning_regex:
         return warning_regex[language]
     return warning_regex["no_profile"]
@@ -31,8 +30,8 @@ def get_warning_regex(language: str) -> List[Tuple[str, re.Pattern]]:
 
 class GlobalProfile:
     excluded_languages: List[str]
-    purge_regex_lines: List[Tuple[str, re.Pattern]]
-    warning_regex_lines: List[Tuple[str, re.Pattern]]
+    purge_regex_lines: List[Tuple[str, str]]
+    warning_regex_lines: List[Tuple[str, str]]
 
     def __init__(self, parser, default: bool) -> None:
         self.purge_regex_lines = []
@@ -42,14 +41,12 @@ class GlobalProfile:
             if not default:
                 key = key + "*"
             value = f"({value})"
-            compiled_regex = re.compile(value, flags=re.IGNORECASE | re.UNICODE)
-            self.purge_regex_lines.append((key, compiled_regex))
+            self.purge_regex_lines.append((key, value))
         for key, value in list(parser["WARNING_REGEX"].items()):
             if not default:
                 key = key + "*"
             value = f"({value})"
-            compiled_regex = re.compile(value, flags=re.IGNORECASE | re.UNICODE)
-            self.warning_regex_lines.append((key, compiled_regex))
+            self.warning_regex_lines.append((key, value))
 
         self.excluded_languages = parser["META"].get("excluded_language_codes", "").replace(" ", "").split(",")
         for language in self.excluded_languages:
@@ -88,14 +85,12 @@ def _load_profile(profile_file: Path, default: bool = True) -> None:
                 if not default:
                     key = key + "*"
                 value = f"({value})"
-                compiled_regex = re.compile(value, flags=re.IGNORECASE | re.UNICODE)
-                purge_regex[language].append((key, compiled_regex))
+                purge_regex[language].append((key, value))
             for key, value in list(parser["WARNING_REGEX"].items()):
                 if not default:
                     key = key + "*"
                 value = f"({value})"
-                compiled_regex = re.compile(value, flags=re.IGNORECASE | re.UNICODE)
-                warning_regex[language].append((key, compiled_regex))
+                warning_regex[language].append((key, value))
 
     except Exception as e:
         logger.error(f"Incorrectly configured regex language profile: {profile_file.name}")

@@ -12,11 +12,11 @@ def punish_regex_matches(subtitle: Subtitle) -> None:
         _run_regex_on_block(block, regex_lists.get_warning_regex(subtitle.language), 1)
 
 
-def _run_regex_on_block(block: SubBlock, regex_list: List[Tuple[str, re.Pattern]], punishment: int) -> None:
+def _run_regex_on_block(block: SubBlock, regex_list: List[Tuple[str, str]], punishment: int) -> None:
     clean_content = " ".join(block.content.replace("-\n", "-").split())
     for regex in regex_list:
         try:
-            result = re.findall(regex[1], clean_content)
+            result = re.findall(regex[1], clean_content, flags=re.IGNORECASE | re.UNICODE)
             if result and isinstance(result[0], str):
                 result = [r.lower() for r in result]
                 result = set(result)
