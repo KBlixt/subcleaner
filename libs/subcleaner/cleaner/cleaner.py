@@ -10,6 +10,8 @@ from ..sub_block import SubBlock
 ad_blocks: Dict[SubBlock, Set[Path]] = {}
 warning_blocks: Dict[SubBlock, Set[Path]] = {}
 
+logger = logging.getLogger(__name__)
+
 
 def find_ads(subtitle: Subtitle) -> None:
     punishers.punish_regex_matches(subtitle)
@@ -31,6 +33,10 @@ def find_ads(subtitle: Subtitle) -> None:
     detectors.detect_wedged(subtitle)
     punishers.move_duplicated(subtitle)
     detectors.detect_chain(subtitle)
+
+
+def reset():
+    punishers.reset_duplicate()
 
 
 def remove_ads(subtitle: Subtitle):

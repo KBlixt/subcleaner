@@ -71,6 +71,7 @@ def clean_file(subtitle_file: Path) -> None:
     cleaner.remove_ads(subtitle)
     if config.fix_overlaps:
         cleaner.fix_overlap(subtitle)
+    cleaner.reset()
 
     if len(subtitle.blocks) == 0:
         l = list(subtitle.ad_blocks)
