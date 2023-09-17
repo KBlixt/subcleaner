@@ -1,7 +1,7 @@
 import configparser
 import re
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Pattern
 
 from libs.subcleaner.settings import config
 import logging
@@ -9,21 +9,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 global_profiles: List["GlobalProfile"] = []
-purge_regex: Dict[str, List[Tuple[str, re.Pattern]]] = {}
-warning_regex: Dict[str, List[Tuple[str, re.Pattern]]] = {}
+purge_regex: Dict[str, List[Tuple[str, Pattern]]] = {}
+warning_regex: Dict[str, List[Tuple[str, Pattern]]] = {}
 
 
 def language_has_profile(language: str):
     return language in purge_regex
 
 
-def get_purge_regex(language: str) -> List[Tuple[str, re.Pattern]]:
+def get_purge_regex(language: str) -> List[Tuple[str, Pattern]]:
     if language in purge_regex:
         return purge_regex[language]
     return purge_regex["no_profile"]
 
 
-def get_warning_regex(language: str) -> List[Tuple[str, re.Pattern]]:
+def get_warning_regex(language: str) -> List[Tuple[str, Pattern]]:
     if language in warning_regex:
         return warning_regex[language]
     return warning_regex["no_profile"]
@@ -31,8 +31,8 @@ def get_warning_regex(language: str) -> List[Tuple[str, re.Pattern]]:
 
 class GlobalProfile:
     excluded_languages: List[str]
-    purge_regex_lines: List[Tuple[str, re.Pattern]]
-    warning_regex_lines: List[Tuple[str, re.Pattern]]
+    purge_regex_lines: List[Tuple[str, Pattern]]
+    warning_regex_lines: List[Tuple[str, Pattern]]
 
     def __init__(self, parser, default: bool) -> None:
         self.purge_regex_lines = []

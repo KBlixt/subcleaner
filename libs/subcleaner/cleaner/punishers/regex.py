@@ -1,5 +1,5 @@
 import re
-from typing import List, Tuple
+from typing import List, Tuple, Pattern
 
 from libs.subcleaner import regex_lists
 from libs.subcleaner.sub_block import SubBlock
@@ -12,7 +12,7 @@ def punish_regex_matches(subtitle: Subtitle) -> None:
         _run_regex_on_block(block, regex_lists.get_warning_regex(subtitle.language), 1)
 
 
-def _run_regex_on_block(block: SubBlock, regex_list: List[Tuple[str, re.Pattern]], punishment: int) -> None:
+def _run_regex_on_block(block: SubBlock, regex_list: List[Tuple[str, Pattern]], punishment: int) -> None:
     clean_content = " ".join(block.content.replace("-\n", "-").split())
     for regex in regex_list:
         try:
