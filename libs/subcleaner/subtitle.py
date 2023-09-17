@@ -243,10 +243,11 @@ class Subtitle:
         return content[:-1]
 
     def get_warning_indexes(self) -> List[str]:
-        l: List[str] = []
+        l: List[int] = []
         for block in self.warning_blocks:
-            l.append(str(block.current_index))
-        return l
+            l.append(int(block.current_index))
+        l.sort()
+        return [str(x) for x in l]
 
     def reindex(self):
         index = 1
