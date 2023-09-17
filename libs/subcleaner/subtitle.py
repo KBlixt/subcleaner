@@ -69,14 +69,16 @@ class Subtitle:
         except KeyError:
             pass
         self.ad_blocks.add(block)
-        if "-->" in block.content:
-            logger.warning(f"potential malformed subtitle blocks in removed block {block.original_index}.")
 
     def _parse_file_content(self, file_content: str) -> None:
         file_content = file_content.replace("—>", "-->")
         current_line = 0
         line_lookup: Dict[str, int] = {}
-        for line in file_content.split("\n"):
+
+        lines = file_content.split("\n")
+        if len(lines) < 2:
+            raise FileContentException(self.file)
+        for line in lines:
             current_line += 1
             if "-->" in line:
                 line_lookup[line] = current_line

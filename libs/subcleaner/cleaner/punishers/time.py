@@ -13,10 +13,10 @@ def punish_quick_first_block(subtitle: Subtitle) -> None:
 
 def punish_short_duration(subtitle: Subtitle) -> None:
     for block in subtitle.blocks:
-        if block.end_time - block.start_time < datetime.timedelta(milliseconds=250):
+        if block.end_time - block.start_time < datetime.timedelta(milliseconds=8/30*1000):
             block.regex_matches += 1
             block.hints.append("short duration")
 
-        if block.end_time - block.start_time < datetime.timedelta(milliseconds=100):
+        if block.end_time - block.start_time < datetime.timedelta(milliseconds=3/30*1000):
             block.regex_matches += 1
             block.hints.append("very short duration")
