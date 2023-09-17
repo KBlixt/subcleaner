@@ -13,15 +13,18 @@ files_failed: Dict[str, str] = {}
 
 
 def main():
-    for file in args.subtitles:
-        if file.suffix == ".srt":
-            logger.debug(f"cleaning file: {file}")
-            clean_file(file)
+    try:
+        for file in args.subtitles:
+            if file.suffix == ".srt":
+                logger.debug(f"cleaning file: {file}")
+                clean_file(file)
 
-    logger.debug(f"path libraries: {args.libraries}")
-    for library in args.libraries:
-        logger.debug(f"cleaning library: {library}")
-        clean_directory(library)
+        logger.debug(f"path libraries: {args.libraries}")
+        for library in args.libraries:
+            logger.debug(f"cleaning library: {library}")
+            clean_directory(library)
+    except KeyboardInterrupt:
+        logger.info("subcleaner aborted")
 
     if files_handled:
         if args.end_report and len(files_handled) > 1:
