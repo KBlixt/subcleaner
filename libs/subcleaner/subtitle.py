@@ -211,11 +211,19 @@ class Subtitle:
 
         self.language = "und"
 
-        for suffix in self.file.suffixes[max(-3, -len(self.file.suffixes)): -1]:
+        found_hi = False
+        for suffix in reversed(self.file.suffixes[max(-3, -len(self.file.suffixes)): -1]):
             parsed_lang = suffix.replace(":", "-").replace("_", "-").split("-")[0][1:]
+            if parsed_lang == "hi":
+                found_hi = True
+                continue
+
             if languages.is_language(parsed_lang):
                 self.language = parsed_lang
                 return
+        if found_hi:
+            self.language = "hi"
+            return
 
         sub_content: str = ""
         for block in self.blocks:
