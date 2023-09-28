@@ -89,7 +89,7 @@ def fix_overlap(subtitle: Subtitle) -> None:
 
         overlap = previous_block.end_time - block.start_time + timedelta(seconds=3 / 30)
         if timedelta(milliseconds=3) < overlap and (len(block.content) + len(previous_block.content)) > 0:
-            content_ratio = len(block.content) / (len(block.content) + len(previous_block.content))
+            content_ratio = block.duration_seconds / (block.duration_seconds + previous_block.duration_seconds)
             block.start_time += content_ratio * overlap
             previous_block.end_time += (content_ratio - 1) * overlap
 
