@@ -198,7 +198,7 @@ class Subtitle:
             return True  # not enough content to estimate language.
         try:
             detected_language = langdetect.detect_langs(sub_content)[0]
-        except LangDetectException as e:
+        except LangDetectException:
             logger.warning(f"{self} can't be analyzed by language detector.")
             return True
 

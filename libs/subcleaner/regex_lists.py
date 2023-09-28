@@ -97,7 +97,7 @@ def _load_profile(profile_file: Path, default: bool = True) -> None:
                 compiled_regex = re.compile(value, flags=re.IGNORECASE | re.UNICODE)
                 warning_regex[language].append((key, compiled_regex))
 
-    except Exception as e:
+    except Exception:
         logger.error(f"Incorrectly configured regex language profile: {profile_file.name}")
         exit(1)
 

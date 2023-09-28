@@ -6,7 +6,6 @@ from libs.subcleaner import cleaner, report_generator, languages, regex_lists
 from .settings import args, config
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 files_handled: List[str] = []
 files_failed: Dict[str, str] = {}
