@@ -14,7 +14,7 @@ if __name__ == '__main__':
         logger.warning("subcleaner was interrupted.")
         exit(0)
     except PermissionError as e:
-        logger.error("subcleaner ran into an permission error. Permission denied to: \"" + e.filename + "\"")
+        logger.error("subcleaner ran into a permission error. Permission denied to: \"" + e.filename + "\"")
         exit(1)
     except DuplicateOptionError as e:
         logger.error("subcleaner was unable to read config file \"" + e.args[2].name +
