@@ -102,7 +102,7 @@ def clean_file(subtitle_file: Path) -> None:
                      "Nothing was altered.")
         if reasons:
             logger.error("all removed blocks had common reasons: " + ", ".join(reasons))
-        files_failed[subtitle_file.name] = "all removed blocks had common reasons: " + ", ".join(reasons)
+        files_failed[subtitle_file.name] = "aborted, removed all subtitles. all removed blocks had common reasons: " + ", ".join(reasons)
         return
 
     logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")
