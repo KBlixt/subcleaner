@@ -97,8 +97,8 @@ def clean_file(subtitle_file: Path) -> None:
                 if hint not in block.hints:
                     reasons.remove(hint)
 
-        logger.error("There might be an issue with the regex, "
-                     "because everything in the subtitle would have gotten deleted."
+        logger.error("There might be an issue with the regex or the subtitle file, "
+                     "because everything in the subtitle would have gotten deleted. "
                      "Nothing was altered.")
         if reasons:
             logger.error("all removed blocks had common reasons: " + ", ".join(reasons))

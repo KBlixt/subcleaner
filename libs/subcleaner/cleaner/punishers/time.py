@@ -5,6 +5,8 @@ from libs.subcleaner.subtitle import Subtitle
 
 
 def punish_quick_first_block(subtitle: Subtitle) -> None:
+    if not subtitle.blocks:
+        return 
     block = subtitle.blocks[0]
     if block.start_time < timedelta(seconds=1):
         block.regex_matches += 1
