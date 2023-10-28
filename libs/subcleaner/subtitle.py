@@ -85,9 +85,10 @@ class Subtitle:
         file_content = re.sub(r'\n\s*\n', '\n', file_content)
         file_content = file_content.strip()
         file_content_lines = file_content.split("\n")
+        file_content_lines.append("")
         self._breakup_block(file_content_lines, line_lookup)
 
-    def _breakup_block(self, lines: [str], line_lookup: Dict[str, int]) -> None:
+    def _breakup_block(self, lines: List[str], line_lookup: Dict[str, int]) -> None:
         last_break = 0
         start_index = 0
         for i in range(len(lines)):
