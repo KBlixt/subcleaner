@@ -298,5 +298,15 @@ def read_file(file: Path) -> str:
     except UnicodeDecodeError:
         with file.open("r", encoding="cp1252") as opened_file:
             file_content = opened_file.read()
+    if not "-->" in file_content:
+        try:
+            with file.open("r", encoding="utf-16") as opened_file:
+                file_content = opened_file.read()
+        except UnicodeDecodeError:
+            try:
+                with file.open("r", encoding="utf-8") as opened_file:
+                    file_content = opened_file.read()
+            except UnicodeDecodeError:
+                pass
 
     return file_content
