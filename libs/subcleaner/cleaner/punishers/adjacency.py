@@ -1,3 +1,4 @@
+import re
 from typing import Set
 
 from libs.subcleaner.sub_block import SubBlock
@@ -27,8 +28,9 @@ def punish_ad_adjacency(subtitle: Subtitle) -> None:
         block = subtitle.blocks[index]
         for compare_block in subtitle.blocks[max(0, index - 1): min(index + 2, len(subtitle.blocks))]:
             if compare_block.regex_matches >= 2 and compare_block != block:
-                adjacent_blocks.add(block)
-                break
+                if re.sub(" +", " ", block.content.replace("\n", " ").strip()).count(" ") <= 4:
+                    adjacent_blocks.add(block)
+                    break
 
     for block in nearby_blocks:
         block.regex_matches += 1
