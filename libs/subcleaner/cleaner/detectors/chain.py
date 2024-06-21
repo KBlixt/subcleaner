@@ -8,38 +8,34 @@ from libs.subcleaner.subtitle import Subtitle
 def detect_chain(subtitle: Subtitle) -> None:
     chain: List[SubBlock] = []
     identical_count = 0
-    for i in range(0, len(subtitle.blocks)):
+    for i in range(1, len(subtitle.blocks)):
         block = subtitle.blocks[i]
+        pre_block = subtitle.blocks[i - 1]
 
         link: bool = False
-        if i < len(subtitle.blocks) - 1:
-            post_block = subtitle.blocks[i + 1]
-            if is_link(post_block, block):
-                if post_block.equal_content(block):
-                    identical_count += 1
-                link = True
-        if i > 0:
-            pre_block = subtitle.blocks[i - 1]
-            if is_link(pre_block, block):
-                if pre_block.equal_content(block) and not link:
-                    identical_count += 1
-                link = True
 
-        if not link:
-            if len(chain) > 2 + identical_count or any(block in subtitle.ad_blocks for block in chain):
-                for chain_block in chain:
-                    subtitle.ad(chain_block)
-                    chain_block.hints.append("chain_block")
+        if is_link(pre_block, block):
+            if pre_block.equal_content(block):
+                identical_count += 1
+            link = True
 
-            chain.clear()
-            identical_count = 0
+        if link:
+            if not chain:
+                chain.append(pre_block)
+            chain.append(block)
             continue
-        chain.append(block)
+
+        if len(chain) > 2 + identical_count or any(block in subtitle.ad_blocks for block in chain):
+            for chain_block in chain:
+                subtitle.ad(chain_block)
+                chain_block.hints.append("chain_block")
+
+        chain.clear()
+        identical_count = 0
     if len(chain) > 2 + identical_count or any(block in subtitle.ad_blocks for block in chain):
         for chain_block in chain:
             subtitle.ad(chain_block)
             chain_block.hints.append("chain_block")
-    chain.clear()
 
 
 def is_link(block: SubBlock, post_block: SubBlock) -> bool:
