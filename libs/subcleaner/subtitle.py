@@ -53,7 +53,7 @@ class Subtitle:
             prev_block = self.blocks[0]
             blocks_to_remove: Set[SubBlock] = set()
             for block in self.blocks[1:]:
-                if block.content == prev_block.content and (prev_block.end_time - block.start_time).total_seconds() < 1/31:
+                if block.content == prev_block.content and (block.start_time - prev_block.end_time).total_seconds() < 1/31:
                     prev_block.end_time = block.end_time
                     blocks_to_remove.add(block)
                     continue
@@ -299,7 +299,7 @@ class FileContentException(Exception):
 
 def read_file(file: Path) -> str:
     file_content: str
-
+    # todo: maybe fix decoding to be more reliable?
     try:
         with file.open("r", encoding="utf-8-sig") as opened_file:
             file_content = opened_file.read()
