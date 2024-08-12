@@ -58,6 +58,8 @@ class Subtitle:
                     blocks_to_remove.add(block)
                     continue
                 prev_block = block
+            for block in blocks_to_remove:
+                self.blocks.remove(block)
 
     def warn(self, block: SubBlock):
         if block not in self.ad_blocks:
