@@ -77,7 +77,7 @@ def remove_ads(subtitle: Subtitle):
     subtitle.reindex()
 
 
-def fix_overlap(subtitle: Subtitle) -> Bool:
+def fix_overlap(subtitle: Subtitle):
     if len(subtitle.blocks) < 2:
         return False
     changes = False
