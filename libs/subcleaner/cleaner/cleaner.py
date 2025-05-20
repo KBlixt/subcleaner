@@ -77,10 +77,10 @@ def remove_ads(subtitle: Subtitle):
     subtitle.reindex()
 
 
-def fix_overlap(subtitle: Subtitle) -> None:
+def fix_overlap(subtitle: Subtitle):
     if len(subtitle.blocks) < 2:
-        return
-
+        return False
+    changes = False
     previous_block = subtitle.blocks[0]
     for block in subtitle.blocks[1:]:
         if not (previous_block.start_time < block.start_time and previous_block.end_time < block.end_time):
@@ -92,9 +92,10 @@ def fix_overlap(subtitle: Subtitle) -> None:
             content_ratio = block.duration_seconds / (block.duration_seconds + previous_block.duration_seconds)
             block.start_time += content_ratio * overlap
             previous_block.end_time += (content_ratio - 1) * overlap
-
+            changes = True
+        
         previous_block = block
-    return
+    return changes
 
 
 def unscramble(subtitle: Subtitle):
