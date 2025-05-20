@@ -81,12 +81,14 @@ def clean_file(subtitle_file: Path) -> None:
 
     if not subtitle.language_is_correct():
         logger.warning(f"the language within the file does not match language: '{subtitle.language}'")
-
+    changes = False
     cleaner.unscramble(subtitle)
     cleaner.find_ads(subtitle)
+    if subtitle.ad_blocks:
+        changes = True
     cleaner.remove_ads(subtitle)
     if config.fix_overlaps:
-        cleaner.fix_overlap(subtitle)
+        changes = changes or cleaner.fix_overlap(subtitle)
     cleaner.reset()
 
     if len(subtitle.blocks) == 0:
@@ -107,13 +109,16 @@ def clean_file(subtitle_file: Path) -> None:
 
     logger.info(f"Done. Cleaning report:\n{report_generator.generate_report(subtitle)}\n")
     files_handled.append(subtitle_file.name)
+    if changes:
+        logger.info("no ads found") 
 
     if args.dry_run:
         subtitle.to_content()
         logger.warning("dry run: nothing was altered.")
     else:
-        with subtitle_file.open("w", encoding="UTF-8") as file:
-            file.write(subtitle.to_content())
+        if changes:
+            with subtitle_file.open("w", encoding="UTF-8") as file:
+                file.write(subtitle.to_content())
 
 
 def clean_directory(directory: Path) -> None:
