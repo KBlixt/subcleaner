@@ -126,9 +126,16 @@ def time_string_to_timedelta(time_string: str) -> datetime.timedelta:
     if minutes >= 60:
         raise ValueError()
 
-    return datetime.timedelta(hours=hours,
-                              minutes=minutes,
-                              seconds=seconds)
+    try:
+        return datetime.timedelta(hours=hours,
+                                  minutes=minutes,
+                                  seconds=seconds)
+    except OverflowError:
+        # A malformed timestamp with an absurd hours value (e.g. a corrupt
+        # downloaded subtitle) overflows timedelta. Report it as a ValueError,
+        # which the callers already handle, instead of letting OverflowError
+        # escape and crash the run.
+        raise ValueError()
 
 
 def timedelta_to_time_string(timedelta: datetime.timedelta) -> str:
